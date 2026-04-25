@@ -48,7 +48,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function ProductPage({ params }: PageProps) {
   let product = null;
   let related: Awaited<ReturnType<typeof productsAPI.getAll>> = [];
-  let howtoSteps = [];
+  interface HowToStep {
+  step: number;
+  title: string;
+  desc: string;
+  img: string;
+}
+
+let howtoSteps: HowToStep[] = [];
 
   try {
     product = await productsAPI.getById(params.id);

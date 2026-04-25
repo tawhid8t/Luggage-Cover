@@ -52,7 +52,7 @@ export default function CustomersPage() {
 
   const getCustomerStats = (customerId: string) => {
     const custOrders = orders.filter((o) => o.customer_phone === customers.find((c) => c.id === customerId)?.phone);
-    const totalSpent = custOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
+    const totalSpent = custOrders.reduce((s, o) => s + (o.total_amount || 0), 0);
     return { orderCount: custOrders.length, totalSpent };
   };
 
@@ -97,10 +97,10 @@ export default function CustomersPage() {
                     .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
                     .map((o) => (
                       <tr key={o.id}>
-                        <td className="cell-bold">{o.orderNumber || o.id?.slice(0, 8)}</td>
-                        <td>{formatDate(o.createdAt)}</td>
-                        <td className="cell-bold">{formatPrice(o.totalAmount || 0)}</td>
-                        <td><span className={`status-badge status-${o.orderStatus}`}>{o.orderStatus}</span></td>
+                        <td className="cell-bold">{o.order_number || o.id?.slice(0, 8)}</td>
+                        <td>{formatDate(o.created_at)}</td>
+                        <td className="cell-bold">{formatPrice(o.total_amount || 0)}</td>
+                        <td><span className={`status-badge status-${o.order_status}`}>{o.order_status}</span></td>
                       </tr>
                     ))}
                 </tbody>

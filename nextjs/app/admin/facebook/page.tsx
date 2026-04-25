@@ -5,19 +5,19 @@ import { fbCampaignsAPI, type FBCampaign } from "@/lib/api";
 import { formatPrice as fp } from "@/lib/utils";
 
 function calcProfit(c: FBCampaign) {
-  const rate = c.exchangeRate || 110;
-  const bdtSpent = (c.usdSpent || 0) * rate;
-  const orders = c.actualOrders || c.predictedOrders || 0;
-  const revenue = (c.avgOrderValue || 0) * orders;
-  const prodCost = (c.unitProductionCost || 0) * orders;
-  const delivCost = (c.deliveryCostPerOrder || 0) * orders;
-  const totalCost = bdtSpent + prodCost + delivCost + (c.otherCostsBdt || 0);
+  const rate = c.exchange_rate || 110;
+  const bdtSpent = (c.usd_spent || 0) * rate;
+  const orders = c.actual_orders || c.predicted_orders || 0;
+  const revenue = (c.avg_order_value || 0) * orders;
+  const prodCost = (c.unit_production_cost || 0) * orders;
+  const delivCost = (c.delivery_cost_per_order || 0) * orders;
+  const totalCost = bdtSpent + prodCost + delivCost + (c.other_costs_bdt || 0);
   return { bdtSpent, orders, revenue, totalCost, profit: revenue - totalCost };
 }
 
 function fbBreakEvenOrders(c: FBCampaign) {
-  const bdtSpent = (c.usdSpent || 0) * ((c.exchangeRate || 110));
-  const profitPerOrder = (c.avgOrderValue || 0) - (c.unitProductionCost || 0) - (c.deliveryCostPerOrder || 0);
+  const bdtSpent = (c.usd_spent || 0) * ((c.exchange_rate || 110));
+  const profitPerOrder = (c.avg_order_value || 0) - (c.unit_production_cost || 0) - (c.delivery_cost_per_order || 0);
   if (profitPerOrder <= 0) return "∞";
   return Math.ceil(bdtSpent / profitPerOrder);
 }
@@ -45,7 +45,7 @@ export default function FacebookPage() {
     setLoading(true);
     try {
       const data = await fbCampaignsAPI.getAll(true);
-      data.sort((a, b) => ((b.createdAt || "") > (a.createdAt || "") ? 1 : -1));
+      data.sort((a, b) => ((b.created_at || "") > (a.created_at || "") ? 1 : -1));
       setCampaigns(data);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
@@ -53,13 +53,13 @@ export default function FacebookPage() {
 
   useEffect(() => { loadCampaigns(); }, [loadCampaigns]);
 
-  const totalUSD = campaigns.reduce((s, c) => s + (c.usdSpent || 0), 0);
-  const totalBDT = campaigns.reduce((s, c) => s + ((c.usdSpent || 0) * (c.exchangeRate || 110)), 0);
-  const totalPredOrders = campaigns.reduce((s, c) => s + (c.predictedOrders || 0), 0);
-  const totalActualOrders = campaigns.reduce((s, c) => s + (c.actualOrders || 0), 0);
+  const totalUSD = campaigns.reduce((s, c) => s + (c.usd_spent || 0), 0);
+  const totalBDT = campaigns.reduce((s, c) => s + ((c.usd_spent || 0) * (c.exchange_rate || 110)), 0);
+  const totalPredOrders = campaigns.reduce((s, c) => s + (c.predicted_orders || 0), 0);
+  const totalActualOrders = campaigns.reduce((s, c) => s + (c.actual_orders || 0), 0);
   const totalRevenue = campaigns.reduce((s, c) => {
-    const orders = c.actualOrders || c.predictedOrders || 0;
-    return s + (c.avgOrderValue || 0) * orders;
+    const orders = c.actual_orders || c.predicted_orders || 0;
+    return s + (c.avg_order_value || 0) * orders;
   }, 0);
   const totalProfit = campaigns.reduce((s, c) => s + calcProfit(c).profit, 0);
 
@@ -79,22 +79,22 @@ export default function FacebookPage() {
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const usd = parseFloat(fd.get("usdSpent") as string) || 0;
-    const rate = parseFloat(fd.get("exchangeRate") as string) || 110;
+    const usd = parseFloat(fd.get("usd_spent") as string) || 0;
+    const rate = parseFloat(fd.get("exchange_rate") as string) || 110;
     const g = (k: string) => parseFloat(fd.get(k) as string) || 0;
     const data = {
-      campaignName: fd.get("campaignName") as string,
+      campaign_name: fd.get("campaign_name") as string,
       month: fd.get("month") as string,
       status: fd.get("status") as string,
-      usdSpent: usd,
-      exchangeRate: rate,
+      usd_spent: usd,
+      exchange_rate: rate,
       bdtSpent: usd * rate,
-      predictedOrders: g("predictedOrders"),
-      actualOrders: g("actualOrders"),
-      avgOrderValue: g("avgOrderValue"),
-      unitProductionCost: g("unitProductionCost"),
-      deliveryCostPerOrder: g("deliveryCostPerOrder"),
-      otherCostsBdt: g("otherCostsBdt"),
+      predicted_orders: g("predicted_orders"),
+      actual_orders: g("actual_orders"),
+      avg_order_value: g("avg_order_value"),
+      unit_production_cost: g("unit_production_cost"),
+      delivery_cost_per_order: g("delivery_cost_per_order"),
+      other_costs_bdt: g("other_costs_bdt"),
       notes: fd.get("notes") as string,
     };
     setSaving(true);
@@ -117,8 +117,8 @@ export default function FacebookPage() {
 
   const statusColors: Record<string, string> = { active: "#27ae60", completed: "#1877f2", paused: "#e67e22" };
 
-  const latestRate = campaigns[0]?.exchangeRate || 110;
-  const latestUSD = campaigns[0]?.usdSpent || 0;
+  const latestRate = campaigns[0]?.exchange_rate || 110;
+  const latestUSD = campaigns[0]?.usd_spent || 0;
   const predictionRate = totalPredOrders > 0 ? Math.round((totalActualOrders / totalPredOrders) * 100) : 0;
 
   return (
@@ -214,7 +214,7 @@ export default function FacebookPage() {
         ) : (
           campaigns.map((c) => {
             const { bdtSpent, orders, revenue, totalCost, profit } = calcProfit(c);
-            const isActual = (c.actualOrders || 0) > 0;
+            const isActual = (c.actual_orders || 0) > 0;
             const roas = bdtSpent > 0 ? (revenue / bdtSpent).toFixed(2) : "0";
             const margin = revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : "0";
             const cpo = orders > 0 ? (bdtSpent / orders).toFixed(0) : "0";
@@ -226,11 +226,11 @@ export default function FacebookPage() {
                 <div className="fb-campaign-header" onClick={() => setExpanded(isOpen ? null : c.id)}>
                   <div className="fb-campaign-icon"><i className="fab fa-facebook-f" /></div>
                   <div className="fb-campaign-meta">
-                    <div className="fb-campaign-name">{c.campaignName || "Unnamed Campaign"}</div>
-                    <div className="fb-campaign-period">{c.month || "—"} &nbsp;·&nbsp; 1 USD = ৳{c.exchangeRate || 110}</div>
+                    <div className="fb-campaign-name">{c.campaign_name || "Unnamed Campaign"}</div>
+                    <div className="fb-campaign-period">{c.month || "—"} &nbsp;·&nbsp; 1 USD = ৳{c.exchange_rate || 110}</div>
                   </div>
                   <div className="fb-campaign-pills">
-                    <span className="fb-pill fb-pill-blue">${c.usdSpent || 0} → ৳{Math.round(bdtSpent).toLocaleString()}</span>
+                    <span className="fb-pill fb-pill-blue">${c.usd_spent || 0} → ৳{Math.round(bdtSpent).toLocaleString()}</span>
                     <span className={`fb-pill ${statusColors[c.status] ? `fb-pill-${statusColors[c.status] === "#27ae60" ? "green" : statusColors[c.status] === "#1877f2" ? "blue" : "orange"}` : "fb-pill-blue"}`}>
                       {c.status || "active"}
                     </span>
@@ -246,35 +246,35 @@ export default function FacebookPage() {
                     <div className="fb-breakdown-grid">
                       <div className="fb-breakdown-item blue">
                         <div className="fbi-label">💵 FB Ad Spend</div>
-                        <div className="fbi-value">${c.usdSpent || 0}</div>
+                        <div className="fbi-value">${c.usd_spent || 0}</div>
                         <div style={{ fontSize: 12, color: "#1877f2", marginTop: 2 }}>= ৳{Math.round(bdtSpent).toLocaleString()}</div>
                       </div>
                       <div className="fb-breakdown-item">
                         <div className="fbi-label">📦 Predicted Orders</div>
-                        <div className="fbi-value">{c.predictedOrders || 0}</div>
+                        <div className="fbi-value">{c.predicted_orders || 0}</div>
                       </div>
                       <div className={`fb-breakdown-item ${isActual ? "green" : "orange"}`}>
                         <div className="fbi-label">✅ Actual Orders</div>
-                        <div className="fbi-value">{c.actualOrders || 0}</div>
+                        <div className="fbi-value">{c.actual_orders || 0}</div>
                         <div style={{ fontSize: 12, color: "var(--admin-muted)", marginTop: 2 }}>{isActual ? "Real data" : "Not yet recorded"}</div>
                       </div>
                       <div className="fb-breakdown-item">
                         <div className="fbi-label">💰 Avg Order Value</div>
-                        <div className="fbi-value">৳{(c.avgOrderValue || 0).toLocaleString()}</div>
+                        <div className="fbi-value">৳{(c.avg_order_value || 0).toLocaleString()}</div>
                       </div>
                       <div className="fb-breakdown-item">
                         <div className="fbi-label">🏭 Prod Cost/Unit</div>
-                        <div className="fbi-value">৳{(c.unitProductionCost || 0).toLocaleString()}</div>
-                        <div style={{ fontSize: 12, color: "var(--admin-muted)" }}>Total: ৳{Math.round((c.unitProductionCost || 0) * orders).toLocaleString()}</div>
+                        <div className="fbi-value">৳{(c.unit_production_cost || 0).toLocaleString()}</div>
+                        <div style={{ fontSize: 12, color: "var(--admin-muted)" }}>Total: ৳{Math.round((c.unit_production_cost || 0) * orders).toLocaleString()}</div>
                       </div>
                       <div className="fb-breakdown-item">
                         <div className="fbi-label">🚚 Deliv Cost/Order</div>
-                        <div className="fbi-value">৳{(c.deliveryCostPerOrder || 0).toLocaleString()}</div>
-                        <div style={{ fontSize: 12, color: "var(--admin-muted)" }}>Total: ৳{Math.round((c.deliveryCostPerOrder || 0) * orders).toLocaleString()}</div>
+                        <div className="fbi-value">৳{(c.delivery_cost_per_order || 0).toLocaleString()}</div>
+                        <div style={{ fontSize: 12, color: "var(--admin-muted)" }}>Total: ৳{Math.round((c.delivery_cost_per_order || 0) * orders).toLocaleString()}</div>
                       </div>
                       <div className="fb-breakdown-item">
                         <div className="fbi-label">➕ Other Costs</div>
-                        <div className="fbi-value">৳{(c.otherCostsBdt || 0).toLocaleString()}</div>
+                        <div className="fbi-value">৳{(c.other_costs_bdt || 0).toLocaleString()}</div>
                       </div>
                       <div className="fb-breakdown-item orange">
                         <div className="fbi-label">📊 ROAS</div>
@@ -286,7 +286,7 @@ export default function FacebookPage() {
                     <div className="fb-profit-result">
                       <h4><i className="fas fa-chart-pie" /> Full P&L ({isActual ? "Actual Orders" : "Predicted Orders"})</h4>
                       <div className="fb-profit-row">
-                        <span className="fpr-label">📈 Revenue ({orders} × ৳{(c.avgOrderValue || 0).toLocaleString()})</span>
+                        <span className="fpr-label">📈 Revenue ({orders} × ৳{(c.avg_order_value || 0).toLocaleString()})</span>
                         <span className="fpr-value">৳{Math.round(revenue).toLocaleString()}</span>
                       </div>
                       <div className="fb-profit-row" style={{ borderTop: "1px solid rgba(255,255,255,.1)", marginTop: 6, paddingTop: 10 }}>
@@ -294,17 +294,17 @@ export default function FacebookPage() {
                         <span className="fpr-value" style={{ color: "#f39c12" }}>- ৳{Math.round(bdtSpent).toLocaleString()}</span>
                       </div>
                       <div className="fb-profit-row">
-                        <span className="fpr-label">🏭 Production Cost ({orders} × ৳{(c.unitProductionCost || 0).toLocaleString()})</span>
-                        <span className="fpr-value" style={{ color: "#f39c12" }}>- ৳{Math.round((c.unitProductionCost || 0) * orders).toLocaleString()}</span>
+                        <span className="fpr-label">🏭 Production Cost ({orders} × ৳{(c.unit_production_cost || 0).toLocaleString()})</span>
+                        <span className="fpr-value" style={{ color: "#f39c12" }}>- ৳{Math.round((c.unit_production_cost || 0) * orders).toLocaleString()}</span>
                       </div>
                       <div className="fb-profit-row">
-                        <span className="fpr-label">🚚 Delivery Cost ({orders} × ৳{(c.deliveryCostPerOrder || 0).toLocaleString()})</span>
-                        <span className="fpr-value" style={{ color: "#f39c12" }}>- ৳{Math.round((c.deliveryCostPerOrder || 0) * orders).toLocaleString()}</span>
+                        <span className="fpr-label">🚚 Delivery Cost ({orders} × ৳{(c.delivery_cost_per_order || 0).toLocaleString()})</span>
+                        <span className="fpr-value" style={{ color: "#f39c12" }}>- ৳{Math.round((c.delivery_cost_per_order || 0) * orders).toLocaleString()}</span>
                       </div>
-                      {(c.otherCostsBdt || 0) > 0 && (
+                      {(c.other_costs_bdt || 0) > 0 && (
                         <div className="fb-profit-row">
                           <span className="fpr-label">➕ Other Costs</span>
-                          <span className="fpr-value" style={{ color: "#f39c12" }}>- ৳{(c.otherCostsBdt || 0).toLocaleString()}</span>
+                          <span className="fpr-value" style={{ color: "#f39c12" }}>- ৳{(c.other_costs_bdt || 0).toLocaleString()}</span>
                         </div>
                       )}
                       <div className="fb-profit-row total-row">
@@ -351,15 +351,15 @@ export default function FacebookPage() {
                         <i className="fas fa-edit" /> Edit
                       </button>
                       <button className="admin-btn admin-btn-outline admin-btn-sm" onClick={async () => {
-                        try { await fbCampaignsAPI.create({ ...c, campaignName: `${c.campaignName} (Copy)`, status: "paused", actualOrders: 0 }); await loadCampaigns(); } catch (e) { console.error(e); }
+                        try { await fbCampaignsAPI.create({ ...c, campaign_name: `${c.campaign_name} (Copy)`, status: "paused", actual_orders: 0 }); await loadCampaigns(); } catch (e) { console.error(e); }
                       }}>
                         <i className="fas fa-copy" /> Duplicate
                       </button>
                       {!isActual && (
                         <button className="admin-btn admin-btn-success admin-btn-sm" onClick={() => {
-                          const actual = prompt(`Enter actual orders for "${c.campaignName}":`, String(c.predictedOrders || 0));
+                          const actual = prompt(`Enter actual orders for "${c.campaign_name}":`, String(c.predicted_orders || 0));
                           if (!actual) return;
-                          fbCampaignsAPI.update(c.id, { actualOrders: parseInt(actual) || 0 }).then(loadCampaigns).catch(console.error);
+                          fbCampaignsAPI.update(c.id, { actual_orders: parseInt(actual) || 0 }).then(loadCampaigns).catch(console.error);
                         }}>
                           <i className="fas fa-check-circle" /> Record Actual
                         </button>
@@ -440,18 +440,18 @@ export default function FacebookPage() {
 
                 <button className="admin-btn admin-btn-primary" style={{ marginTop: 16, width: "100%", background: "linear-gradient(135deg,#1877f2,#42a5f5)", border: "none" }} onClick={async () => {
                   const data = {
-                    campaignName: `Calculator Preview`,
+                    campaign_name: `Calculator Preview`,
                     month: new Date().toISOString().slice(0, 7),
                     status: "active",
-                    usdSpent: calcUSD,
-                    exchangeRate: calcRate,
+                    usd_spent: calcUSD,
+                    exchange_rate: calcRate,
                     bdtSpent: calcUSD * calcRate,
-                    predictedOrders: calcOrders,
-                    actualOrders: 0,
-                    avgOrderValue: calcAOV,
-                    unitProductionCost: calcProd,
-                    deliveryCostPerOrder: calcDeliv,
-                    otherCostsBdt: calcOther,
+                    predicted_orders: calcOrders,
+                    actual_orders: 0,
+                    avg_order_value: calcAOV,
+                    unit_production_cost: calcProd,
+                    delivery_cost_per_order: calcDeliv,
+                    other_costs_bdt: calcOther,
                     notes: "Saved from ROI Calculator",
                   };
                   try {
@@ -556,19 +556,19 @@ export default function FacebookPage() {
                   </thead>
                   <tbody>
                     {campaigns.map((c) => {
-                      const rate = c.exchangeRate || 110;
-                      const bdtSpent = (c.usdSpent || 0) * rate;
-                      const orders = c.actualOrders || c.predictedOrders || 0;
-                      const revenue = (c.avgOrderValue || 0) * orders;
-                      const totalCost = bdtSpent + (c.unitProductionCost || 0) * orders + (c.deliveryCostPerOrder || 0) * orders + (c.otherCostsBdt || 0);
+                      const rate = c.exchange_rate || 110;
+                      const bdtSpent = (c.usd_spent || 0) * rate;
+                      const orders = c.actual_orders || c.predicted_orders || 0;
+                      const revenue = (c.avg_order_value || 0) * orders;
+                      const totalCost = bdtSpent + (c.unit_production_cost || 0) * orders + (c.delivery_cost_per_order || 0) * orders + (c.other_costs_bdt || 0);
                       const profit = revenue - totalCost;
                       const margin = revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : "0";
                       const roas = bdtSpent > 0 ? (revenue / bdtSpent).toFixed(2) : "0";
                       return (
                         <tr key={c.id}>
-                          <td className="cell-bold">{c.campaignName || "—"}</td>
+                          <td className="cell-bold">{c.campaign_name || "—"}</td>
                           <td>{c.month || "—"}</td>
-                          <td>${c.usdSpent || 0}</td>
+                          <td>${c.usd_spent || 0}</td>
                           <td>৳{Math.round(bdtSpent).toLocaleString()}</td>
                           <td>{orders}</td>
                           <td>৳{Math.round(revenue).toLocaleString()}</td>
@@ -636,13 +636,13 @@ export default function FacebookPage() {
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 640 }}>
             <h3 style={{ fontWeight: 800, marginBottom: 20, color: "var(--brand-navy)" }}>
-              {editCampaign ? `Edit: ${editCampaign.campaignName}` : "New Facebook Campaign"}
+              {editCampaign ? `Edit: ${editCampaign.campaign_name}` : "New Facebook Campaign"}
             </h3>
             <form onSubmit={handleSave}>
               <div className="form-grid-2">
                 <div className="form-group">
                   <label className="form-label">Campaign Name *</label>
-                  <input type="text" name="campaignName" className="admin-input" required defaultValue={editCampaign?.campaignName || ""} placeholder="e.g. Eid Collection Launch" />
+                  <input type="text" name="campaign_name" className="admin-input" required defaultValue={editCampaign?.campaign_name || ""} placeholder="e.g. Eid Collection Launch" />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Month</label>
@@ -652,35 +652,35 @@ export default function FacebookPage() {
               <div className="form-grid-2">
                 <div className="form-group">
                   <label className="form-label">💵 USD Spent</label>
-                  <input type="number" name="usdSpent" className="admin-input" defaultValue={editCampaign?.usdSpent ?? 100} min={0} />
+                  <input type="number" name="usd_spent" className="admin-input" defaultValue={editCampaign?.usd_spent ?? 100} min={0} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">💱 Exchange Rate (1 USD = X BDT)</label>
-                  <input type="number" name="exchangeRate" className="admin-input" defaultValue={editCampaign?.exchangeRate ?? 110} min={1} />
+                  <input type="number" name="exchange_rate" className="admin-input" defaultValue={editCampaign?.exchange_rate ?? 110} min={1} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">📦 Predicted Orders</label>
-                  <input type="number" name="predictedOrders" className="admin-input" defaultValue={editCampaign?.predictedOrders ?? 80} min={0} />
+                  <input type="number" name="predicted_orders" className="admin-input" defaultValue={editCampaign?.predicted_orders ?? 80} min={0} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">✅ Actual Orders</label>
-                  <input type="number" name="actualOrders" className="admin-input" defaultValue={editCampaign?.actualOrders ?? 0} min={0} />
+                  <input type="number" name="actual_orders" className="admin-input" defaultValue={editCampaign?.actual_orders ?? 0} min={0} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">💰 Avg Order Value (৳)</label>
-                  <input type="number" name="avgOrderValue" className="admin-input" defaultValue={editCampaign?.avgOrderValue ?? 1190} min={0} />
+                  <input type="number" name="avg_order_value" className="admin-input" defaultValue={editCampaign?.avg_order_value ?? 1190} min={0} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">🏭 Production Cost/Unit (৳)</label>
-                  <input type="number" name="unitProductionCost" className="admin-input" defaultValue={editCampaign?.unitProductionCost ?? 400} min={0} />
+                  <input type="number" name="unit_production_cost" className="admin-input" defaultValue={editCampaign?.unit_production_cost ?? 400} min={0} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">🚚 Delivery Cost/Order (৳)</label>
-                  <input type="number" name="deliveryCostPerOrder" className="admin-input" defaultValue={editCampaign?.deliveryCostPerOrder ?? 80} min={0} />
+                  <input type="number" name="delivery_cost_per_order" className="admin-input" defaultValue={editCampaign?.delivery_cost_per_order ?? 80} min={0} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">➕ Other Costs (৳)</label>
-                  <input type="number" name="otherCostsBdt" className="admin-input" defaultValue={editCampaign?.otherCostsBdt ?? 0} min={0} />
+                  <input type="number" name="other_costs_bdt" className="admin-input" defaultValue={editCampaign?.other_costs_bdt ?? 0} min={0} />
                 </div>
               </div>
               <div className="form-group">

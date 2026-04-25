@@ -469,7 +469,7 @@ async loadAll(): Promise<{ key: string; value: string }[]> {
     }
   }
 
-  invalidate(): void {
+  invalidateCache(): void {
     this.allCache = null;
   }
 
@@ -864,28 +864,28 @@ export const couriersAPI = new CouriersAPI();
 
 export interface ProductionBatch {
   id: string;
-  batchName: string;
-  batchDate: string;
-  designCodes: string;
+  batch_name: string;
+  batch_date: string;
+  design_codes: string;
   status: "planning" | "in_production" | "completed";
-  fabricCost: number;
-  garmentsBill: number;
-  printBill: number;
-  accessoriesBill: number;
-  transportCost: number;
-  packagingCost: number;
-  otherCosts: number;
-  qtySmall: number;
-  qtyMedium: number;
-  qtyLarge: number;
-  qtyXl: number;
-  sellPriceSmall: number;
-  sellPriceMedium: number;
-  sellPriceLarge: number;
-  sellPriceXl: number;
+  fabric_cost: number;
+  garments_bill: number;
+  print_bill: number;
+  accessories_bill: number;
+  transport_cost: number;
+  packaging_cost: number;
+  other_costs: number;
+  qty_small: number;
+  qty_medium: number;
+  qty_large: number;
+  qty_xl: number;
+  sell_price_small: number;
+  sell_price_medium: number;
+  sell_price_large: number;
+  sell_price_xl: number;
   notes: string;
-  createdAt?: string;
-  updatedAt?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 class ProductionBatchesAPI {
@@ -933,21 +933,21 @@ export const productionBatchesAPI = new ProductionBatchesAPI();
 
 export interface FBCampaign {
   id: string;
-  campaignName: string;
+  campaign_name: string;
   month: string;
   status: "active" | "completed" | "paused" | "cancelled";
-  usdSpent: number;
-  exchangeRate: number;
-  bdtSpent: number;
-  predictedOrders: number;
-  actualOrders: number;
-  avgOrderValue: number;
-  unitProductionCost: number;
-  deliveryCostPerOrder: number;
-  otherCostsBdt: number;
+  usd_spent: number;
+  exchange_rate: number;
+  bdt_spent: number;
+  predicted_orders: number;
+  actual_orders: number;
+  avg_order_value: number;
+  unit_production_cost: number;
+  delivery_cost_per_order: number;
+  other_costs_bdt: number;
   notes: string;
-  createdAt?: string;
-  updatedAt?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 class FBCampaignsAPI {

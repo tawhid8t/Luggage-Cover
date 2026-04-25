@@ -93,7 +93,7 @@ export default function RootLayout({
       <head>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css" />
       </head>
-      <body suppressHydrationWarning="true" className="font-body antialiased">
+      <body suppressHydrationWarning className="font-body antialiased">
         <Analytics />
         {children}
       </body>

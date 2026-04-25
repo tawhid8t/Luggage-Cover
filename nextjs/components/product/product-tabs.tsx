@@ -64,7 +64,7 @@ export function ProductTabs({ productCode, howtoSteps }: ProductTabsProps) {
             </table>
           </div>
           <div className="hidden md:block mt-10">
-            <h3 className="font-bold text-lg mb-4">Why You'll Love It</h3>
+            <h3 className="font-bold text-lg mb-4">Why You&apos;ll Love It</h3>
             <ul className="space-y-3">
               {[
                 "Instantly recognizable on any baggage carousel",

@@ -225,9 +225,9 @@ export default function InventoryPage() {
                   value={adjustForm.size}
                   onChange={(e) => setAdjustForm({ ...adjustForm, size: e.target.value })}
                 >
-                  <option value="small">Small (18"-20")</option>
-                  <option value="medium">Medium (20"-24")</option>
-                  <option value="large">Large (24"-28")</option>
+                  <option value="small">Small (18&quot;-20&quot;)</option>
+                  <option value="medium">Medium (20&quot;-24&quot;)</option>
+                  <option value="large">Large (24&quot;-28&quot;)</option>
                 </select>
               </div>
               <div className="admin-form-group">

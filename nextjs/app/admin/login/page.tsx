@@ -31,9 +31,6 @@ export default function AdminLoginPage() {
       if (result.success) {
         const sessionVal = result.user?.userId || "1";
         document.cookie = `lcbd_admin_session=${sessionVal}; path=/; max-age=86400; SameSite=Lax`;
-        if (result.token) {
-          setAdminToken(result.token);
-        }
         window.location.href = "/admin";
       } else {
         setError(result.message || "Login failed.");

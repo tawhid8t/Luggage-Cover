@@ -15,7 +15,7 @@ const PLATFORM_LABELS: Record<string, string> = {
 };
 
 function resolveCost(e: ContentBudgetEntry) {
-  return (e.amountBdt && e.amountBdt > 0) ? e.amountBdt : (e.amountUsd || 0) * (e.exchangeRate || 110);
+  return (e.amount_bdt && e.amount_bdt > 0) ? e.amount_bdt : (e.amount_usd || 0) * (e.exchange_rate || 110);
 }
 
 export default function ContentPage() {
@@ -34,7 +34,7 @@ export default function ContentPage() {
     setLoading(true);
     try {
       const data = await contentBudgetAPI.getAll(true);
-      data.sort((a, b) => ((b.createdAt || "") > (a.createdAt || "") ? 1 : -1));
+      data.sort((a, b) => ((b.created_at || "") > (a.created_at || "") ? 1 : -1));
       setEntries(data);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
@@ -67,7 +67,7 @@ export default function ContentPage() {
     if (statusFilter !== "all" && e.status !== statusFilter) return false;
     if (search) {
       const s = search.toLowerCase();
-      if (!(e.title || "").toLowerCase().includes(s) && !(e.vendorName || "").toLowerCase().includes(s)) return false;
+      if (!(e.title || "").toLowerCase().includes(s) && !(e.vendor_name || "").toLowerCase().includes(s)) return false;
     }
     return true;
   });
@@ -77,19 +77,19 @@ export default function ContentPage() {
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const bdt = parseFloat(fd.get("amountBdt") as string) || 0;
-    const usd = parseFloat(fd.get("amountUsd") as string) || 0;
-    const rate = parseFloat(fd.get("exchangeRate") as string) || 110;
+    const bdt = parseFloat(fd.get("amount_bdt") as string) || 0;
+    const usd = parseFloat(fd.get("amount_usd") as string) || 0;
+    const rate = parseFloat(fd.get("exchange_rate") as string) || 110;
     const effective = bdt > 0 ? bdt : usd * rate;
     const data = {
       title: fd.get("title") as string,
       category: fd.get("category") as string,
       month: fd.get("month") as string,
-      vendorName: fd.get("vendorName") as string,
+      vendor_name: fd.get("vendor_name") as string,
       platform: fd.get("platform") as string,
-      amountBdt: bdt || null,
-      amountUsd: usd || null,
-      exchangeRate: rate,
+      amount_bdt: bdt || null,
+      amount_usd: usd || null,
+      exchange_rate: rate,
       effectiveBdt: effective,
       status: fd.get("status") as string,
       notes: fd.get("notes") as string,
@@ -205,7 +205,7 @@ export default function ContentPage() {
                           </td>
                           <td className="text-sm text-muted">{e.month || "—"}</td>
                           <td className="text-sm">{PLATFORM_LABELS[e.platform] || e.platform || "—"}</td>
-                          <td className="text-sm text-muted">{e.vendorName || "—"}</td>
+                          <td className="text-sm text-muted">{e.vendor_name || "—"}</td>
                           <td className="font-700 text-purple">{fp(Math.round(cost))}</td>
                           <td>
                             <div className="flex gap-1-5">
@@ -249,7 +249,7 @@ export default function ContentPage() {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Vendor / Freelancer</label>
-                  <input type="text" name="vendorName" className="admin-input" defaultValue={editEntry?.vendorName || ""} placeholder="e.g. Studio XYZ" />
+                  <input type="text" name="vendor_name" className="admin-input" defaultValue={editEntry?.vendor_name || ""} placeholder="e.g. Studio XYZ" />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Platform</label>
@@ -265,16 +265,16 @@ export default function ContentPage() {
                 <div className="form-grid-2 gap-2-5 mb-2">
                   <div className="form-group mb-0">
                     <label className="form-label text-sm">Amount BDT (primary)</label>
-                    <input type="number" name="amountBdt" className="admin-input" id="cb_bdt" defaultValue={editEntry?.amountBdt ?? ""} placeholder="e.g. 5000" min={0} onInput={() => calcPreview()} />
+                    <input type="number" name="amount_bdt" className="admin-input" id="cb_bdt" defaultValue={editEntry?.amount_bdt ?? ""} placeholder="e.g. 5000" min={0} onInput={() => calcPreview()} />
                   </div>
                   <div className="form-group mb-0">
                     <label className="form-label text-sm">OR Amount USD</label>
-                    <input type="number" name="amountUsd" className="admin-input" id="cb_usd" defaultValue={editEntry?.amountUsd ?? ""} placeholder="e.g. 50" min={0} onInput={() => calcPreview()} />
+                    <input type="number" name="amount_usd" className="admin-input" id="cb_usd" defaultValue={editEntry?.amount_usd ?? ""} placeholder="e.g. 50" min={0} onInput={() => calcPreview()} />
                   </div>
                 </div>
                 <div className="form-group mb-0">
                   <label className="form-label text-sm">Exchange Rate (1 USD = X BDT)</label>
-                  <input type="number" name="exchangeRate" className="admin-input" id="cb_rate" defaultValue={editEntry?.exchangeRate ?? 110} min={1} onInput={() => calcPreview()} />
+                  <input type="number" name="exchange_rate" className="admin-input" id="cb_rate" defaultValue={editEntry?.exchange_rate ?? 110} min={1} onInput={() => calcPreview()} />
                 </div>
                 {previewVal > 0 && (
                   <div className="preview-box">

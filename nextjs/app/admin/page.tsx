@@ -78,10 +78,10 @@ export default function DashboardPage() {
     }
   };
 
-  const newOrders = orders.filter((o) => o.orderStatus === "new").length;
-  const deliveredCount = orders.filter((o) => o.orderStatus === "delivered").length;
+  const newOrders = orders.filter((o) => o.order_status === "new").length;
+  const deliveredCount = orders.filter((o) => o.order_status === "delivered").length;
   const pendingOrders = orders.filter((o) =>
-    ["new", "confirmed", "packing", "packed"].includes(o.orderStatus)
+    ["new", "confirmed", "packing", "packed"].includes(o.order_status)
   ).length;
   const lowStock = products.filter(
     (p) =>
@@ -94,15 +94,15 @@ export default function DashboardPage() {
   // ── Profit Calculations ──
   let totalUnits = 0, totalCostAll = 0;
   batches.forEach((b) => {
-    const qty = (b.qtySmall||0)+(b.qtyMedium||0)+(b.qtyLarge||0)+(b.qtyXl||0);
-    const cost = (b.fabricCost||0)+(b.garmentsBill||0)+(b.printBill||0)+(b.accessoriesBill||0)+(b.transportCost||0)+(b.packagingCost||0)+(b.otherCosts||0);
+    const qty = (b.qty_small||0)+(b.qty_medium||0)+(b.qty_large||0)+(b.qty_xl||0);
+    const cost = (b.fabric_cost||0)+(b.garments_bill||0)+(b.print_bill||0)+(b.accessories_bill||0)+(b.transport_cost||0)+(b.packaging_cost||0)+(b.other_costs||0);
     totalUnits += qty;
     totalCostAll += cost;
   });
   const avgUnitCost = totalUnits > 0 ? totalCostAll / totalUnits : 0;
 
-  const deliveredOrdersList = orders.filter((o) => o.orderStatus === "delivered");
-  const deliveredRevenue = deliveredOrdersList.reduce((s, o) => s + (o.totalAmount || 0), 0);
+  const deliveredOrdersList = orders.filter((o) => o.order_status === "delivered");
+  const deliveredRevenue = deliveredOrdersList.reduce((s, o) => s + (o.total_amount || 0), 0);
   let deliveredQty = 0;
   deliveredOrdersList.forEach((o) => { (o.items || []).forEach((i) => { deliveredQty += (i.qty || 1); }); });
   const estimatedCOGS = deliveredQty * avgUnitCost;
@@ -128,12 +128,12 @@ export default function DashboardPage() {
 
   // FB Ad Spend (non-cancelled)
   const activeFB = fbCampaigns.filter((c) => c.status !== "cancelled");
-  const totalFBAdSpendBDT = activeFB.reduce((s, c) => s + ((c.usdSpent || 0) * (c.exchangeRate || 110)), 0);
+  const totalFBAdSpendBDT = activeFB.reduce((s, c) => s + ((c.usd_spent || 0) * (c.exchange_rate || 110)), 0);
 
   // Content Budget (non-cancelled)
   const activeContent = contentBudget.filter((e) => e.status !== "cancelled");
   const totalContentSpend = activeContent.reduce((s, e) => {
-    return s + ((e.amountBdt && e.amountBdt > 0) ? e.amountBdt : (e.amountUsd || 0) * (e.exchangeRate || 110));
+    return s + ((e.amount_bdt && e.amount_bdt > 0) ? e.amount_bdt : (e.amount_usd || 0) * (e.exchange_rate || 110));
   }, 0);
 
   // Net Profit
@@ -144,7 +144,7 @@ export default function DashboardPage() {
 
   const statusCounts: Record<string, number> = {};
   orders.forEach((o) => {
-    statusCounts[o.orderStatus] = (statusCounts[o.orderStatus] || 0) + 1;
+    statusCounts[o.order_status] = (statusCounts[o.order_status] || 0) + 1;
   });
 
   const chartData = Object.entries(STATUS_LABELS)
@@ -157,8 +157,8 @@ export default function DashboardPage() {
 
   const recentOrders = [...orders]
     .sort((a, b) => {
-      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      const aTime = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const bTime = b.created_at ? new Date(b.created_at).getTime() : 0;
       return bTime - aTime;
     })
     .slice(0, 8);
@@ -479,21 +479,21 @@ export default function DashboardPage() {
                     <tr key={o.order_number || o.id}>
                       <td className="cell-bold">{o.order_number || o.id?.slice(0, 8)}</td>
                       <td>
-                        {o.customerName || "—"}
+                        {o.customer_name || "—"}
                         <br />
-                        <small className="text-muted">{o.customerPhone}</small>
+                        <small className="text-muted">{o.customer_phone}</small>
                       </td>
                       <td>{(o.items || []).length} item(s)</td>
-                      <td className="cell-bold">{fp(o.totalAmount || 0)}</td>
+                      <td className="cell-bold">{fp(o.total_amount || 0)}</td>
                       <td>
-<span className={`status-badge status-${o.paymentMethod || "cod"}`}>
-                          {o.paymentMethod?.toUpperCase() || "COD"}
+<span className={`status-badge status-${o.payment_method || "cod"}`}>
+                          {o.payment_method?.toUpperCase() || "COD"}
                         </span>
-                        <span className={`status-badge status-${o.orderStatus}`}>
-                          {STATUS_LABELS[o.orderStatus]?.label || o.orderStatus}
+                        <span className={`status-badge status-${o.order_status}`}>
+                          {STATUS_LABELS[o.order_status]?.label || o.order_status}
                         </span>
                       </td>
-                      <td>{formatDate(o.createdAt)}</td>
+                      <td>{formatDate(o.created_at)}</td>
                       <td>
                         <a href={`/admin/orders?view=${o.id}`} className="admin-btn admin-btn-outline admin-btn-sm">
                           👁
