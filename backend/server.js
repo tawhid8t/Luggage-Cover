@@ -31,16 +31,19 @@ if (process.env.ALLOWED_ORIGINS) {
 }
 
 console.log('Allowed origins:', allowedOrigins);
+console.log('FRONTEND_URL env:', process.env.FRONTEND_URL);
+console.log('ALLOWED_ORIGINS env:', process.env.ALLOWED_ORIGINS);
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   console.log('Incoming origin:', origin);
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  console.log('Allowed origins:', allowedOrigins);
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Credentials', 'false');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
   }
