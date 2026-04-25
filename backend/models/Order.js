@@ -23,7 +23,7 @@ const StatusHistorySchema = new mongoose.Schema({
 
 const OrderSchema = new mongoose.Schema(
   {
-    orderNumber: { type: String, unique: true },
+    orderNumber: { type: String, unique: true, index: true },
 
     // Customer info
     customerName:    { type: String, required: true, trim: true },
@@ -81,7 +81,6 @@ OrderSchema.pre('save', async function (next) {
   next();
 });
 
-OrderSchema.index({ orderNumber: 1 });
 OrderSchema.index({ customerPhone: 1 });
 OrderSchema.index({ orderStatus: 1 });
 OrderSchema.index({ createdAt: -1 });

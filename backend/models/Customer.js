@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const CustomerSchema = new mongoose.Schema(
   {
     name:        { type: String, required: true, trim: true },
-    phone:       { type: String, required: true, unique: true, trim: true },
+    phone:       { type: String, required: true, unique: true, trim: true, index: true },
     email:       { type: String, trim: true, lowercase: true },
     address:     String,
     district:    String,
@@ -18,7 +18,6 @@ const CustomerSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-CustomerSchema.index({ phone: 1 });
 CustomerSchema.index({ name: 'text', phone: 'text', email: 'text' });
 
 module.exports = mongoose.model('Customer', CustomerSchema);
