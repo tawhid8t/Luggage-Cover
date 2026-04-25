@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Cart – Luggage Cover BD</title>
+  <link rel="stylesheet" href="css/brand.css"/>
+  <link rel="stylesheet" href="css/store.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+<div class="promo-bar" id="promoBar">🎉 <span>BUY 4+ COVERS = 15% OFF</span> — Applied automatically at checkout ✈️</div>
+
+<header class="site-header" id="siteHeader">
+  <div class="container">
+    <nav class="navbar">
+      <a href="index.html" class="nav-logo">
+        <div class="logo-icon">✈️</div>
+        <div class="logo-text"><span class="logo-main">LUGGAGE</span><span class="logo-sub">COVER BD</span></div>
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="shop.html" class="nav-link">Shop</a></li>
+        <li><a href="about.html" class="nav-link">About</a></li>
+        <li><a href="faq.html" class="nav-link">FAQ</a></li>
+        <li><a href="contact.html" class="nav-link">Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="cart.html" class="cart-btn"><i class="fas fa-shopping-bag"></i><span class="cart-badge" style="display:none">0</span></a>
+        <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container">
+    <h1 class="page-hero-title">My <span class="text-gradient">Cart</span></h1>
+    <div class="breadcrumb"><a href="index.html">Home</a> / <span>Cart</span></div>
+  </div>
+</section>
+
+<section class="cart-section section">
+  <div class="container">
+
+    <!-- EMPTY CART -->
+    <div id="emptyCart" class="empty-cart hidden">
+      <div class="empty-icon">🛒</div>
+      <h2>Your cart is empty</h2>
+      <p>Looks like you haven't added any covers yet. Explore our stunning designs!</p>
+      <a href="shop.html" class="btn btn-primary btn-lg"><i class="fas fa-shopping-bag"></i> Browse All Designs</a>
+    </div>
+
+    <!-- CART CONTENT -->
+    <div id="cartContent" class="cart-layout hidden">
+
+      <!-- Cart Items -->
+      <div class="cart-items-panel">
+        <div class="cart-panel-header">
+          <h3>Shopping Cart (<span id="cartItemCount">0</span> items)</h3>
+          <button class="clear-cart-btn" onclick="clearCart()"><i class="fas fa-trash"></i> Clear All</button>
+        </div>
+
+        <!-- Discount Banner -->
+        <div id="discountBanner" class="discount-banner hidden"></div>
+
+        <div id="cartItemsList"></div>
+
+        <div class="cart-continue">
+          <a href="shop.html" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Continue Shopping</a>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="order-summary">
+        <h3>Order Summary</h3>
+
+        <!-- Delivery Location -->
+        <div class="form-group">
+          <label class="form-label">Delivery Location</label>
+          <select id="districtSelect" class="form-control" onchange="recalculate()">
+            <option value="dhaka">Inside Dhaka (৳60)</option>
+            <option value="outside">Outside Dhaka (৳120)</option>
+          </select>
+        </div>
+
+        <!-- Summary Lines -->
+        <div class="summary-lines">
+          <div class="summary-line">
+            <span>Subtotal (<span id="summQty">0</span> items)</span>
+            <span id="summSubtotal">৳ 0</span>
+          </div>
+          <div class="summary-line discount-line" id="summDiscountLine" style="display:none">
+            <span class="discount-label"><i class="fas fa-tag"></i> Bulk Discount (15%)</span>
+            <span id="summDiscount" class="discount-amount">— ৳ 0</span>
+          </div>
+          <div class="summary-line">
+            <span>Delivery Charge</span>
+            <span id="summDelivery">৳ 60</span>
+          </div>
+          <div class="divider"></div>
+          <div class="summary-line total-line">
+            <span>Total</span>
+            <span id="summTotal">৳ 0</span>
+          </div>
+        </div>
+
+        <!-- Promo Reminder -->
+        <div id="promoReminder" class="promo-reminder"></div>
+
+        <a href="checkout.html" class="btn btn-teal btn-lg w-full checkout-btn">
+          <i class="fas fa-lock"></i> Proceed to Checkout
+        </a>
+
+        <!-- Trust Badges -->
+        <div class="trust-badges">
+          <div class="trust-item"><i class="fas fa-truck"></i><span>Fast Delivery</span></div>
+          <div class="trust-item"><i class="fas fa-shield-alt"></i><span>Secure Order</span></div>
+          <div class="trust-item"><i class="fas fa-undo"></i><span>Easy Returns</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom"><p>© 2024 Luggage Cover BD. All rights reserved.</p>
+      <div class="payment-icons"><span class="pay-icon">COD</span><span class="pay-icon">bKash</span><span class="pay-icon">Nagad</span></div>
+    </div>
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const header = document.getElementById('siteHeader');
+  window.addEventListener('scroll', () => header.classList.toggle('scrolled', window.scrollY > 60));
+  document.getElementById('hamburger').addEventListener('click', () => {
+    document.getElementById('navLinks').classList.toggle('open');
+    document.getElementById('hamburger').classList.toggle('active');
+  });
+
+  await Settings.load();
+  renderCart();
+
+  window.addEventListener('cart:updated', () => renderCart());
+});
+
+async function renderCart() {
+  const items = Cart.get();
+  if (items.length === 0) {
+    document.getElementById('emptyCart').classList.remove('hidden');
+    document.getElementById('cartContent').classList.add('hidden');
+    return;
+  }
+  document.getElementById('emptyCart').classList.add('hidden');
+  document.getElementById('cartContent').classList.remove('hidden');
+
+  document.getElementById('cartItemCount').textContent = items.length;
+
+  // Render items
+  const listEl = document.getElementById('cartItemsList');
+  listEl.innerHTML = items.map(item => `
+    <div class="cart-item">
+      <div class="ci-image">${item.emoji || '🧳'}</div>
+      <div class="ci-details">
+        <div class="ci-name">${item.productName}</div>
+        <div class="ci-meta">
+          <span class="ci-code">${item.productCode}</span>
+          <span class="ci-size">${item.size.charAt(0).toUpperCase() + item.size.slice(1)}</span>
+        </div>
+        <div class="ci-price">৳ ${item.price.toLocaleString()} each</div>
+      </div>
+      <div class="ci-qty-control">
+        <button class="qty-btn" onclick="updateItemQty('${item.key}', ${item.qty - 1})"><i class="fas fa-minus"></i></button>
+        <span class="ci-qty">${item.qty}</span>
+        <button class="qty-btn" onclick="updateItemQty('${item.key}', ${item.qty + 1})"><i class="fas fa-plus"></i></button>
+      </div>
+      <div class="ci-total">৳ ${(item.price * item.qty).toLocaleString()}</div>
+      <button class="ci-remove" onclick="removeItem('${item.key}')"><i class="fas fa-times"></i></button>
+    </div>
+  `).join('');
+
+  await recalculate();
+}
+
+async function recalculate() {
+  const items = Cart.get();
+  const district = document.getElementById('districtSelect')?.value || 'dhaka';
+  const subtotal = Cart.getSubtotal();
+  const totalQty = Cart.getTotalQty();
+  const discount = await Cart.getDiscount();
+  const deliveryCharge = await Cart.getDeliveryCharge(district);
+  const finalTotal = subtotal - discount.amount + deliveryCharge;
+
+  document.getElementById('summQty').textContent = totalQty;
+  document.getElementById('summSubtotal').textContent = `৳ ${subtotal.toLocaleString()}`;
+  document.getElementById('summDelivery').textContent = `৳ ${deliveryCharge}`;
+  document.getElementById('summTotal').textContent = `৳ ${finalTotal.toLocaleString()}`;
+
+  const discountLine = document.getElementById('summDiscountLine');
+  if (discount.applied) {
+    discountLine.style.display = 'flex';
+    document.getElementById('summDiscount').textContent = `— ৳ ${discount.amount.toLocaleString()}`;
+    document.getElementById('discountBanner').innerHTML = `
+      <i class="fas fa-tag"></i>
+      <span>🎉 <strong>15% bulk discount applied!</strong> You're saving ৳${discount.amount.toLocaleString()}</span>`;
+    document.getElementById('discountBanner').classList.remove('hidden');
+  } else {
+    discountLine.style.display = 'none';
+    document.getElementById('discountBanner').classList.add('hidden');
+  }
+
+  // Promo reminder
+  const minQty = Settings.getNumber('promo_bulk_qty', 4);
+  const needed = Math.max(0, minQty - totalQty);
+  const reminderEl = document.getElementById('promoReminder');
+  if (!discount.applied && needed > 0) {
+    reminderEl.innerHTML = `<i class="fas fa-info-circle"></i> Add <strong>${needed} more</strong> item${needed !== 1 ? 's' : ''} to get <strong>15% off!</strong>`;
+    reminderEl.style.display = 'flex';
+  } else {
+    reminderEl.style.display = 'none';
+  }
+
+  // Save summary to sessionStorage for checkout
+  sessionStorage.setItem('lcbd_order_summary', JSON.stringify({
+    subtotal, discountAmount: discount.amount, deliveryCharge, total: finalTotal, district
+  }));
+}
+
+function updateItemQty(key, newQty) {
+  Cart.updateQty(key, newQty);
+  renderCart();
+}
+
+function removeItem(key) {
+  Cart.remove(key);
+  renderCart();
+}
+
+function clearCart() {
+  if (confirm('Remove all items from cart?')) {
+    Cart.clear();
+    renderCart();
+  }
+}
+</script>
+
+<style>
+.page-hero { background:var(--gradient-hero); color:white; padding:60px 0 40px; text-align:center; }
+.page-hero-title { font-family:var(--font-heading); font-size:clamp(2rem,4vw,3.5rem); font-weight:900; margin-bottom:12px; }
+.page-hero .breadcrumb { font-size:0.85rem; color:rgba(255,255,255,0.5); }
+.page-hero .breadcrumb a { color:var(--brand-teal); }
+.cart-section { padding:48px 0; }
+.empty-cart { text-align:center; padding:80px 20px; }
+.empty-icon { font-size:5rem; margin-bottom:20px; }
+.empty-cart h2 { font-family:var(--font-heading); font-size:1.8rem; margin-bottom:12px; }
+.empty-cart p { color:var(--text-muted); margin-bottom:32px; }
+.cart-layout { display:grid; grid-template-columns:1fr 360px; gap:32px; align-items:start; }
+.cart-items-panel { background:white; border-radius:var(--radius-lg); padding:24px; box-shadow:0 2px 16px rgba(0,0,0,0.06); }
+.cart-panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.cart-panel-header h3 { font-weight:700; font-size:1.1rem; }
+.clear-cart-btn { background:none; color:var(--danger); font-size:0.85rem; font-weight:600; display:flex; align-items:center; gap:6px; cursor:pointer; }
+.discount-banner { background:rgba(39,174,96,0.08); border:1px solid rgba(39,174,96,0.2); color:var(--success); padding:12px 16px; border-radius:var(--radius-md); margin-bottom:16px; display:flex; align-items:center; gap:10px; font-size:0.9rem; }
+.cart-item { display:flex; align-items:center; gap:16px; padding:16px 0; border-bottom:1px solid var(--border-light); }
+.cart-item:last-child { border-bottom:none; }
+.ci-image { width:64px; height:64px; background:linear-gradient(135deg,#f0f3ff,#e8ecfc); border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:2.5rem; flex-shrink:0; }
+.ci-details { flex:1; min-width:0; }
+.ci-name { font-weight:700; font-size:0.95rem; margin-bottom:4px; }
+.ci-meta { display:flex; gap:8px; margin-bottom:4px; }
+.ci-code { font-size:0.75rem; background:rgba(74,144,226,0.1); color:var(--brand-blue); padding:2px 8px; border-radius:20px; font-weight:600; }
+.ci-size { font-size:0.75rem; background:rgba(123,104,238,0.1); color:var(--brand-purple); padding:2px 8px; border-radius:20px; font-weight:600; }
+.ci-price { font-size:0.8rem; color:var(--text-muted); }
+.ci-qty-control { display:flex; align-items:center; border:1px solid var(--border-light); border-radius:var(--radius-md); overflow:hidden; }
+.ci-qty { width:36px; text-align:center; font-weight:700; font-size:0.9rem; }
+.ci-total { font-weight:800; font-size:0.95rem; color:var(--brand-blue); min-width:80px; text-align:right; }
+.ci-remove { width:28px; height:28px; background:rgba(231,76,60,0.1); border:none; border-radius:50%; color:var(--danger); font-size:0.75rem; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:var(--transition-fast); }
+.ci-remove:hover { background:var(--danger); color:white; }
+.cart-continue { margin-top:20px; }
+.order-summary { background:white; border-radius:var(--radius-lg); padding:24px; box-shadow:0 2px 16px rgba(0,0,0,0.06); position:sticky; top:90px; }
+.order-summary h3 { font-weight:700; margin-bottom:20px; font-size:1.1rem; }
+.summary-lines { margin:20px 0; display:flex; flex-direction:column; gap:12px; }
+.summary-line { display:flex; justify-content:space-between; align-items:center; font-size:0.9rem; }
+.discount-line .discount-label { color:var(--success); display:flex; align-items:center; gap:6px; }
+.discount-amount { color:var(--success); font-weight:700; }
+.total-line { font-weight:800; font-size:1.1rem; color:var(--text-dark); }
+.promo-reminder { display:none; align-items:center; gap:8px; background:rgba(74,144,226,0.06); border:1px solid rgba(74,144,226,0.15); padding:10px 14px; border-radius:var(--radius-md); font-size:0.85rem; color:var(--brand-blue); margin-bottom:16px; }
+.checkout-btn { margin-bottom:16px; text-align:center; }
+.trust-badges { display:flex; justify-content:space-around; padding-top:16px; border-top:1px solid var(--border-light); }
+.trust-item { display:flex; flex-direction:column; align-items:center; gap:4px; font-size:0.75rem; color:var(--text-muted); }
+.trust-item i { font-size:1.2rem; color:var(--brand-blue); }
+@media (max-width:900px) {
+  .cart-layout { grid-template-columns:1fr; }
+  .order-summary { position:static; }
+}
+</style>
+</body>
+</html>

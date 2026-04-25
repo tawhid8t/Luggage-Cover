@@ -1,0 +1,243 @@
+require('dotenv').config();
+const mongoose = require('mongoose');
+const Product = require('../models/Product');
+
+const PRODUCTS = [
+  {
+    name: 'World Travel',
+    code: 'a1b23',
+    description: 'Explore the world with this stunning globe design. Perfect for travelers who want to show their love for global adventures.',
+    priceSmall: 990,
+    priceMedium: 1190,
+    priceLarge: 1490,
+    stockSmall: 50,
+    stockMedium: 80,
+    stockLarge: 30,
+    status: 'active',
+    featured: true,
+    sortOrder: 1,
+    imageUrl: '',
+  },
+  {
+    name: 'Cherry Blossom',
+    code: 'a2b34',
+    description: 'Beautiful cherry blossom flowers pattern. A touch of Japanese elegance for your luggage.',
+    priceSmall: 990,
+    priceMedium: 1190,
+    priceLarge: 1490,
+    stockSmall: 45,
+    stockMedium: 70,
+    stockLarge: 25,
+    status: 'active',
+    featured: true,
+    sortOrder: 2,
+    imageUrl: '',
+  },
+  {
+    name: 'Business Professional',
+    code: 'a3b45',
+    description: 'Sleek and professional business design. Perfect for corporate travelers.',
+    priceSmall: 990,
+    priceMedium: 1190,
+    priceLarge: 1490,
+    stockSmall: 40,
+    stockMedium: 60,
+    stockLarge: 20,
+    status: 'active',
+    featured: false,
+    sortOrder: 3,
+    imageUrl: '',
+  },
+  {
+    name: 'Castle Royal',
+    code: 'b1c23',
+    description: 'Majestic castle design fit for royalty. Add a touch of medieval charm to your travels.',
+    priceSmall: 990,
+    priceMedium: 1190,
+    priceLarge: 1490,
+    stockSmall: 35,
+    stockMedium: 55,
+    stockLarge: 20,
+    status: 'active',
+    featured: true,
+    sortOrder: 4,
+    imageUrl: '',
+  },
+  {
+    name: 'Sparkle Shine',
+    code: 'b2c34',
+    description: 'Sparkling star pattern that shines. Make your luggage stand out with this glamorous design.',
+    priceSmall: 990,
+    priceMedium: 1190,
+    priceLarge: 1490,
+    stockSmall: 40,
+    stockMedium: 65,
+    stockLarge: 25,
+    status: 'active',
+    featured: false,
+    sortOrder: 5,
+    imageUrl: '',
+  },
+  {
+    name: 'Sports Fan',
+    code: 'b3c45',
+    description: 'Dynamic sports balls pattern. Show your passion for sports on every trip.',
+    priceSmall: 990,
+    priceMedium: 1190,
+    priceLarge: 1490,
+    stockSmall: 30,
+    stockMedium: 50,
+    stockLarge: 15,
+    status: 'active',
+    featured: false,
+    sortOrder: 6,
+    imageUrl: '',
+  },
+  {
+    name: 'Ferris Wheel',
+    code: 'c1d23',
+    description: 'Colorful ferris wheel design. Bring the fun of amusement parks to your luggage.',
+    priceSmall: 990,
+    priceMedium: 1190,
+    priceLarge: 1490,
+    stockSmall: 38,
+    stockMedium: 58,
+    stockLarge: 22,
+    status: 'active',
+    featured: true,
+    sortOrder: 7,
+    imageUrl: '',
+  },
+  {
+    name: 'Clock Tower',
+    code: 'c2d34',
+    description: 'Classic clock tower pattern. Timeless elegance for the sophisticated traveler.',
+    priceSmall: 990,
+    priceMedium: 1190,
+    priceLarge: 1490,
+    stockSmall: 32,
+    stockMedium: 52,
+    stockLarge: 18,
+    status: 'active',
+    featured: false,
+    sortOrder: 8,
+    imageUrl: '',
+  },
+  {
+    name: 'Travel Map',
+    code: 'c3d45',
+    description: 'Vintage world map design. Perfect for adventure seekers and travel enthusiasts.',
+    priceSmall: 990,
+    priceMedium: 1190,
+    priceLarge: 1490,
+    stockSmall: 42,
+    stockMedium: 68,
+    stockLarge: 28,
+    status: 'active',
+    featured: true,
+    sortOrder: 9,
+    imageUrl: '',
+  },
+  {
+    name: 'Artistic Abstract',
+    code: 'd1e23',
+    description: 'Modern abstract art pattern. Express your artistic side with this unique design.',
+    priceSmall: 990,
+    priceMedium: 1190,
+    priceLarge: 1490,
+    stockSmall: 35,
+    stockMedium: 55,
+    stockLarge: 20,
+    status: 'active',
+    featured: false,
+    sortOrder: 10,
+    imageUrl: '',
+  },
+  {
+    name: 'Cute Cat',
+    code: 'd1e34',
+    description: 'Adorable cat illustration. Purrfect for cat lovers who travel in style.',
+    priceSmall: 990,
+    priceMedium: 1190,
+    priceLarge: 1490,
+    stockSmall: 48,
+    stockMedium: 75,
+    stockLarge: 30,
+    status: 'active',
+    featured: true,
+    sortOrder: 11,
+    imageUrl: '',
+  },
+  {
+    name: 'Japanese Temple',
+    code: 'd3e45',
+    description: 'Traditional Japanese temple scene. Bring Zen and tranquility to your journeys.',
+    priceSmall: 990,
+    priceMedium: 1190,
+    priceLarge: 1490,
+    stockSmall: 36,
+    stockMedium: 56,
+    stockLarge: 21,
+    status: 'active',
+    featured: false,
+    sortOrder: 12,
+    imageUrl: '',
+  },
+  {
+    name: 'Beach Paradise',
+    code: 'e1f23',
+    description: 'Tropical beach sunset design. Carry the vibes of paradise wherever you go.',
+    priceSmall: 990,
+    priceMedium: 1190,
+    priceLarge: 1490,
+    stockSmall: 44,
+    stockMedium: 70,
+    stockLarge: 26,
+    status: 'active',
+    featured: true,
+    sortOrder: 13,
+    imageUrl: '',
+  },
+  {
+    name: 'Cool Vibes',
+    code: 'e2f34',
+    description: 'Trendy cool sunglasses pattern. Stay cool and stylish on every adventure.',
+    priceSmall: 990,
+    priceMedium: 1190,
+    priceLarge: 1490,
+    stockSmall: 38,
+    stockMedium: 62,
+    stockLarge: 24,
+    status: 'active',
+    featured: false,
+    sortOrder: 14,
+    imageUrl: '',
+  },
+];
+
+async function seedProducts() {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('Connected to MongoDB');
+
+    for (const productData of PRODUCTS) {
+      const existing = await Product.findOne({ code: productData.code });
+      if (existing) {
+        console.log(`Product '${productData.name}' (${productData.code}) already exists, skipping.`);
+        continue;
+      }
+
+      const product = new Product(productData);
+      await product.save();
+      console.log(`Created product: ${productData.name} (${productData.code})`);
+    }
+
+    console.log('\n✅ Product seed complete!');
+    process.exit(0);
+  } catch (err) {
+    console.error('Seed failed:', err.message);
+    process.exit(1);
+  }
+}
+
+seedProducts();

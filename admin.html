@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard – Luggage Cover BD</title>
+  <link rel="stylesheet" href="css/brand.css"/>
+  <link rel="stylesheet" href="css/admin.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+</head>
+<body class="admin-body">
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<div class="admin-wrapper">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">✈️</div>
+      <div class="sidebar-logo-text">
+        <span class="sidebar-logo-main">LUGGAGE COVER</span>
+        <span class="sidebar-logo-sub">ADMIN PANEL</span>
+      </div>
+    </div>
+
+    <div class="sidebar-user" id="sidebarUser">
+      <div class="sidebar-avatar" id="sidebarAvatarInitials">A</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">Loading…</div>
+        <div class="sidebar-user-role" id="sidebarUserRole">—</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <span class="sidebar-section-label">Main</span>
+      <a class="sidebar-link active" onclick="showSection('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</a>
+      <a class="sidebar-link" onclick="showSection('orders')"><i class="fas fa-shopping-cart"></i> Orders <span class="sidebar-badge" id="newOrdersBadge">0</span></a>
+
+      <span class="sidebar-section-label">Catalog</span>
+      <a class="sidebar-link" onclick="showSection('products')"><i class="fas fa-box-open"></i> Products & Designs</a>
+      <a class="sidebar-link" onclick="showSection('inventory')"><i class="fas fa-warehouse"></i> Inventory</a>
+
+      <span class="sidebar-section-label">Customers</span>
+      <a class="sidebar-link" onclick="showSection('customers')"><i class="fas fa-users"></i> Customers CRM</a>
+
+      <span class="sidebar-section-label">Delivery</span>
+      <a class="sidebar-link" onclick="showSection('couriers')"><i class="fas fa-truck"></i> Couriers</a>
+
+      <span class="sidebar-section-label">Production</span>
+      <a class="sidebar-link" onclick="showSection('production')"><i class="fas fa-industry"></i> Production & Costs</a>
+
+      <span class="sidebar-section-label">Marketing</span>
+      <a class="sidebar-link" onclick="showSection('facebook')"><i class="fab fa-facebook-square" style="color:#1877f2"></i> Facebook Ads</a>
+      <a class="sidebar-link" onclick="showSection('content')"><i class="fas fa-photo-video" style="color:#9b59b6"></i> Content Budget</a>
+
+      <span class="sidebar-section-label">Finance</span>
+      <a class="sidebar-link" onclick="showSection('payments')"><i class="fas fa-credit-card"></i> Payments</a>
+      <a class="sidebar-link" onclick="showSection('reports')"><i class="fas fa-chart-bar"></i> Reports</a>
+
+      <span class="sidebar-section-label">System</span>
+      <a class="sidebar-link" onclick="showSection('settings')"><i class="fas fa-cog"></i> Settings / CMS</a>
+      <a class="sidebar-link" onclick="showSection('users')"><i class="fas fa-user-shield"></i> Admin Users</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="index.html" target="_blank" class="sidebar-link" style="padding:8px 4px;border-left:none"><i class="fas fa-external-link-alt"></i> View Store</a>
+      <button class="sidebar-logout" onclick="AdminAuth.logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN AREA ===== -->
+  <main class="admin-main">
+
+    <!-- Admin Header -->
+    <header class="admin-header">
+      <div class="admin-header-left">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <div>
+          <div class="admin-page-title" id="headerTitle">Dashboard</div>
+          <div class="admin-page-breadcrumb" id="headerBreadcrumb">Home / Dashboard</div>
+        </div>
+      </div>
+      <div class="admin-header-right">
+        <button class="admin-header-btn" onclick="refreshCurrentSection()" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+        <a href="index.html" target="_blank" class="admin-store-btn"><i class="fas fa-store"></i> View Store</a>
+      </div>
+    </header>
+
+    <!-- Admin Content -->
+    <div class="admin-content" id="adminContent">
+      <!-- Content injected dynamically by JS -->
+      <div class="empty-state"><div class="spinner"></div><p>Loading dashboard…</p></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ===== GLOBAL MODAL ===== -->
+<div id="globalModal" class="admin-modal-overlay hidden">
+  <div class="admin-modal admin-modal-lg" id="globalModalBox">
+    <div class="admin-modal-header">
+      <div class="admin-modal-title" id="globalModalTitle">Modal</div>
+      <button class="admin-modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="admin-modal-body" id="globalModalBody"></div>
+    <div class="admin-modal-footer" id="globalModalFooter"></div>
+  </div>
+</div>
+
+<!-- ===== CONFIRM DIALOG ===== -->
+<div id="confirmDialog" class="admin-modal-overlay hidden">
+  <div class="admin-modal" style="max-width:400px">
+    <div class="admin-modal-header">
+      <div class="admin-modal-title" id="confirmTitle">Confirm Action</div>
+      <button class="admin-modal-close" onclick="closeConfirm()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="admin-modal-body" id="confirmMsg"></div>
+    <div class="admin-modal-footer">
+      <button class="admin-btn admin-btn-outline" onclick="closeConfirm()">Cancel</button>
+      <button class="admin-btn admin-btn-danger" id="confirmOkBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/admin-sections.js"></script>
+<script>
+// Auth check
+if (!AdminAuth.requireAuth()) { throw new Error('Redirect'); }
+
+let currentSection = 'dashboard';
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const session = AdminAuth.getSession();
+  if (!session) return;
+
+  // Show user info
+  document.getElementById('sidebarUserName').textContent = session.fullName;
+  document.getElementById('sidebarUserRole').textContent = session.role.charAt(0).toUpperCase() + session.role.slice(1);
+  document.getElementById('sidebarAvatarInitials').textContent = session.fullName.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
+
+  // Check for hash nav
+  const hash = window.location.hash.replace('#', '');
+  if (hash && typeof AdminSections[hash] === 'function') {
+    showSection(hash);
+  } else {
+    showSection('dashboard');
+  }
+
+  // Update new orders badge
+  updateOrdersBadge();
+});
+
+async function updateOrdersBadge() {
+  try {
+    const orders = await API.getAll('lc_orders');
+    const newCount = orders.filter(o => o.order_status === 'new').length;
+    document.getElementById('newOrdersBadge').textContent = newCount;
+    document.getElementById('newOrdersBadge').style.display = newCount > 0 ? 'inline' : 'none';
+  } catch {}
+}
+
+function showSection(name) {
+  currentSection = name;
+  window.location.hash = name;
+
+  // Update sidebar active
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  const activeLink = document.querySelector(`.sidebar-link[onclick="showSection('${name}')"]`);
+  if (activeLink) activeLink.classList.add('active');
+
+  // Update header
+  const titles = {
+    dashboard: 'Dashboard', orders: 'Orders', products: 'Products & Designs',
+    inventory: 'Inventory', customers: 'Customers CRM',
+    couriers: 'Courier Management',
+    payments: 'Payments', reports: 'Reports', settings: 'Settings / CMS', users: 'Admin Users',
+    production: 'Production & Cost Tracker',
+    facebook: 'Facebook Marketing Tracker',
+    content: 'Content Budget'
+  };
+  document.getElementById('headerTitle').textContent = titles[name] || name;
+  document.getElementById('headerBreadcrumb').textContent = `Home / ${titles[name] || name}`;
+
+  // Render section
+  const content = document.getElementById('adminContent');
+  content.innerHTML = '<div style="text-align:center;padding:40px"><div class="spinner"></div></div>';
+
+  if (AdminSections && typeof AdminSections[name] === 'function') {
+    AdminSections[name]();
+  } else {
+    content.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🚧</div><h3>Coming Soon</h3><p>This section is loading...</p></div>`;
+  }
+
+  // Close sidebar on mobile
+  if (window.innerWidth <= 768) closeSidebar();
+}
+
+function refreshCurrentSection() { showSection(currentSection); }
+
+// Modal Helpers
+function openModal(title, bodyHtml, footerHtml = '') {
+  document.getElementById('globalModalTitle').textContent = title;
+  document.getElementById('globalModalBody').innerHTML = bodyHtml;
+  document.getElementById('globalModalFooter').innerHTML = footerHtml;
+  document.getElementById('globalModal').classList.remove('hidden');
+}
+function closeModal() { document.getElementById('globalModal').classList.add('hidden'); }
+
+// Confirm Dialog
+let confirmCallback = null;
+function showConfirm(title, msg, onConfirm) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').innerHTML = `<p style="color:var(--admin-muted)">${msg}</p>`;
+  confirmCallback = onConfirm;
+  document.getElementById('confirmOkBtn').onclick = () => { closeConfirm(); if(confirmCallback) confirmCallback(); };
+  document.getElementById('confirmDialog').classList.remove('hidden');
+}
+function closeConfirm() { document.getElementById('confirmDialog').classList.add('hidden'); }
+
+// Sidebar
+function toggleSidebar() {
+  document.getElementById('adminSidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+function closeSidebar() {
+  document.getElementById('adminSidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('active');
+}
+
+// Close modal on backdrop click
+document.getElementById('globalModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>

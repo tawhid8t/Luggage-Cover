@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkout – Luggage Cover BD</title>
+  <link rel="stylesheet" href="css/brand.css"/>
+  <link rel="stylesheet" href="css/store.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+<header class="site-header" id="siteHeader">
+  <div class="container">
+    <nav class="navbar">
+      <a href="index.html" class="nav-logo">
+        <div class="logo-icon">✈️</div>
+        <div class="logo-text"><span class="logo-main">LUGGAGE</span><span class="logo-sub">COVER BD</span></div>
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="shop.html" class="nav-link">Shop</a></li>
+        <li><a href="cart.html" class="nav-link">Cart</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="cart.html" class="cart-btn"><i class="fas fa-shopping-bag"></i><span class="cart-badge" style="display:none">0</span></a>
+        <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container">
+    <h1 class="page-hero-title">Checkout</h1>
+    <div class="breadcrumb">
+      <a href="index.html">Home</a> / <a href="cart.html">Cart</a> / <span>Checkout</span>
+    </div>
+  </div>
+</section>
+
+<!-- CHECKOUT STEPS -->
+<div class="checkout-steps">
+  <div class="container">
+    <div class="steps-bar">
+      <div class="step active"><span class="s-dot">1</span>Cart</div>
+      <div class="step-line"></div>
+      <div class="step active"><span class="s-dot">2</span>Details</div>
+      <div class="step-line"></div>
+      <div class="step"><span class="s-dot">3</span>Confirm</div>
+    </div>
+  </div>
+</div>
+
+<section class="checkout-section section">
+  <div class="container">
+    <div class="checkout-layout">
+
+      <!-- LEFT: CHECKOUT FORM -->
+      <div class="checkout-form-panel">
+
+        <!-- Customer Info -->
+        <div class="checkout-card">
+          <h3 class="cc-title"><i class="fas fa-user"></i> Customer Information</h3>
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label class="form-label">Full Name *</label>
+              <input type="text" id="customerName" class="form-control" placeholder="Your full name"/>
+              <span class="field-error hidden" id="err_name">Please enter your name.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number *</label>
+              <input type="tel" id="customerPhone" class="form-control" placeholder="+8801XXXXXXXXX"/>
+              <span class="field-error hidden" id="err_phone">Please enter a valid phone.</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email <span class="optional">(optional)</span></label>
+            <input type="email" id="customerEmail" class="form-control" placeholder="your@email.com"/>
+          </div>
+        </div>
+
+        <!-- Shipping Address -->
+        <div class="checkout-card">
+          <h3 class="cc-title"><i class="fas fa-map-marker-alt"></i> Delivery Address</h3>
+          <div class="form-group">
+            <label class="form-label">Full Address *</label>
+            <textarea id="shippingAddress" class="form-control" rows="3" placeholder="House/Road/Area details…"></textarea>
+            <span class="field-error hidden" id="err_address">Please enter your address.</span>
+          </div>
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label class="form-label">District *</label>
+              <select id="districtSelect" class="form-control" onchange="recalculate()">
+                <option value="">Select District…</option>
+                <optgroup label="Inside Dhaka (৳60)">
+                  <option value="Dhaka">Dhaka</option>
+                </optgroup>
+                <optgroup label="Outside Dhaka (৳120)">
+                  <option value="Chittagong">Chittagong</option>
+                  <option value="Sylhet">Sylhet</option>
+                  <option value="Rajshahi">Rajshahi</option>
+                  <option value="Khulna">Khulna</option>
+                  <option value="Barisal">Barisal</option>
+                  <option value="Rangpur">Rangpur</option>
+                  <option value="Mymensingh">Mymensingh</option>
+                  <option value="Comilla">Comilla</option>
+                  <option value="Narayanganj">Narayanganj</option>
+                  <option value="Gazipur">Gazipur</option>
+                  <option value="Cox's Bazar">Cox's Bazar</option>
+                  <option value="Other">Other</option>
+                </optgroup>
+              </select>
+              <span class="field-error hidden" id="err_district">Please select your district.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Area/Upazila</label>
+              <input type="text" id="areaInput" class="form-control" placeholder="Area, Upazila…"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Order Notes <span class="optional">(optional)</span></label>
+            <textarea id="orderNotes" class="form-control" rows="2" placeholder="Any special instructions…"></textarea>
+          </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="checkout-card">
+          <h3 class="cc-title"><i class="fas fa-credit-card"></i> Payment Method</h3>
+          <div class="payment-options" id="paymentOptions">
+            <label class="payment-option" id="pm_cod">
+              <input type="radio" name="paymentMethod" value="cod" checked onchange="selectPayment('cod')"/>
+              <div class="po-content">
+                <div class="po-icon">💵</div>
+                <div>
+                  <strong>Cash on Delivery (COD)</strong>
+                  <small>Pay cash when your order arrives</small>
+                </div>
+              </div>
+            </label>
+            <label class="payment-option" id="pm_bkash">
+              <input type="radio" name="paymentMethod" value="bkash" onchange="selectPayment('bkash')"/>
+              <div class="po-content">
+                <div class="po-icon">📱</div>
+                <div>
+                  <strong>bKash</strong>
+                  <small>Pay via bKash mobile banking</small>
+                </div>
+              </div>
+            </label>
+            <label class="payment-option" id="pm_nagad">
+              <input type="radio" name="paymentMethod" value="nagad" onchange="selectPayment('nagad')"/>
+              <div class="po-content">
+                <div class="po-icon">📲</div>
+                <div>
+                  <strong>Nagad</strong>
+                  <small>Pay via Nagad mobile banking</small>
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <!-- Online Payment Info Box -->
+          <div id="onlinePaymentInfo" class="online-payment-box hidden">
+            <i class="fas fa-info-circle"></i>
+            <div>
+              <strong>Payment Instructions</strong>
+              <p id="paymentInstructions">Send payment to our number. Include your name in reference.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: ORDER SUMMARY -->
+      <div class="checkout-summary-panel">
+        <div class="checkout-card">
+          <h3 class="cc-title"><i class="fas fa-receipt"></i> Order Summary</h3>
+          <div id="checkoutItemsList" class="co-items-list"></div>
+          <div class="divider"></div>
+          <div class="summary-lines">
+            <div class="summary-line"><span>Subtotal</span><span id="summSubtotal">৳ 0</span></div>
+            <div class="summary-line discount-line" id="summDiscountLine" style="display:none">
+              <span class="discount-label"><i class="fas fa-tag"></i> 15% Bulk Discount</span>
+              <span id="summDiscount" class="discount-amount">— ৳ 0</span>
+            </div>
+            <div class="summary-line"><span>Delivery</span><span id="summDelivery">৳ —</span></div>
+            <div class="divider"></div>
+            <div class="summary-line total-line"><span>Total</span><span id="summTotal">৳ —</span></div>
+          </div>
+
+          <!-- Place Order Button -->
+          <button class="btn btn-teal btn-lg w-full" id="placeOrderBtn" onclick="placeOrder()" style="margin-top:20px">
+            <i class="fas fa-check-circle"></i> Place Order
+          </button>
+          <p class="order-security-note"><i class="fas fa-lock"></i> Your information is 100% secure</p>
+        </div>
+
+        <!-- Trust Info -->
+        <div class="trust-info-panel">
+          <div class="ti-item"><i class="fas fa-truck"></i><div><strong>Fast Delivery</strong><small>Dhaka 1-2 days</small></div></div>
+          <div class="ti-item"><i class="fas fa-undo"></i><div><strong>Easy Returns</strong><small>7-day policy</small></div></div>
+          <div class="ti-item"><i class="fas fa-phone"></i><div><strong>Support</strong><small>+01328-152066</small></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SUCCESS MODAL -->
+<div id="successModal" class="modal-overlay hidden">
+  <div class="modal-box success-modal">
+    <div class="success-icon">🎉</div>
+    <h2>Order Placed Successfully!</h2>
+    <p>Thank you for your order. Your order number is:</p>
+    <div class="order-number-box" id="successOrderNumber">LC-XXXXXXXX</div>
+    <p class="success-msg">We will contact you at <strong id="successPhone">—</strong> to confirm your order and delivery details.</p>
+    <div class="success-actions">
+      <a href="shop.html" class="btn btn-primary">Continue Shopping</a>
+      <a href="index.html" class="btn btn-outline">Back to Home</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+let orderSummary = {};
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const header = document.getElementById('siteHeader');
+  window.addEventListener('scroll', () => header.classList.toggle('scrolled', window.scrollY > 60));
+  document.getElementById('hamburger').addEventListener('click', () => {
+    document.getElementById('navLinks').classList.toggle('open');
+    document.getElementById('hamburger').classList.toggle('active');
+  });
+
+  const items = Cart.get();
+  if (items.length === 0) { window.location.href = 'cart.html'; return; }
+
+  await Settings.load();
+  renderCheckoutItems(items);
+  selectPayment('cod');
+  await recalculate();
+});
+
+function renderCheckoutItems(items) {
+  const el = document.getElementById('checkoutItemsList');
+  el.innerHTML = items.map(item => `
+    <div class="co-item">
+      <div class="co-emoji">${item.emoji || '🧳'}</div>
+      <div class="co-info">
+        <div class="co-name">${item.productName}</div>
+        <div class="co-meta">${item.productCode} · ${item.size.charAt(0).toUpperCase() + item.size.slice(1)} × ${item.qty}</div>
+      </div>
+      <div class="co-price">৳ ${(item.price * item.qty).toLocaleString()}</div>
+    </div>`).join('');
+}
+
+async function recalculate() {
+  const district = document.getElementById('districtSelect').value || 'outside';
+  const subtotal = Cart.getSubtotal();
+  const discount = await Cart.getDiscount();
+  const deliveryCharge = await Cart.getDeliveryCharge(district);
+  const finalTotal = subtotal - discount.amount + deliveryCharge;
+
+  document.getElementById('summSubtotal').textContent = `৳ ${subtotal.toLocaleString()}`;
+  document.getElementById('summDelivery').textContent = `৳ ${deliveryCharge}`;
+  document.getElementById('summTotal').textContent = `৳ ${finalTotal.toLocaleString()}`;
+
+  const discLine = document.getElementById('summDiscountLine');
+  if (discount.applied) {
+    discLine.style.display = 'flex';
+    document.getElementById('summDiscount').textContent = `— ৳ ${discount.amount.toLocaleString()}`;
+  } else {
+    discLine.style.display = 'none';
+  }
+
+  orderSummary = { subtotal, discountAmount: discount.amount, deliveryCharge, total: finalTotal, district };
+}
+
+function selectPayment(method) {
+  document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+  const el = document.getElementById(`pm_${method}`);
+  if (el) el.classList.add('selected');
+
+  const infoBox = document.getElementById('onlinePaymentInfo');
+  const instructions = document.getElementById('paymentInstructions');
+  if (method === 'bkash') {
+    infoBox.classList.remove('hidden');
+    instructions.textContent = 'Send your total to bKash: +01328-152066 (Personal). Use "Order" as reference. Send screenshot to us on WhatsApp.';
+  } else if (method === 'nagad') {
+    infoBox.classList.remove('hidden');
+    instructions.textContent = 'Send your total to Nagad: +01328-152066 (Personal). Use "Order" as reference. Send screenshot to us on WhatsApp.';
+  } else {
+    infoBox.classList.add('hidden');
+  }
+}
+
+function validateForm() {
+  let valid = true;
+  const fields = [
+    { id: 'customerName', errId: 'err_name', msg: 'Please enter your name.' },
+    { id: 'customerPhone', errId: 'err_phone', msg: 'Please enter a valid phone number.' },
+    { id: 'shippingAddress', errId: 'err_address', msg: 'Please enter your address.' },
+    { id: 'districtSelect', errId: 'err_district', msg: 'Please select your district.' }
+  ];
+  fields.forEach(f => {
+    const el = document.getElementById(f.id);
+    const errEl = document.getElementById(f.errId);
+    if (!el.value.trim()) {
+      errEl.classList.remove('hidden');
+      el.classList.add('error');
+      valid = false;
+    } else {
+      errEl.classList.add('hidden');
+      el.classList.remove('error');
+    }
+  });
+  const phone = document.getElementById('customerPhone').value;
+  if (phone && !/^(\+?8801|01)[0-9]{8,10}$/.test(phone.replace(/\s|-/g, ''))) {
+    document.getElementById('err_phone').textContent = 'Please enter a valid BD phone number.';
+    document.getElementById('err_phone').classList.remove('hidden');
+    valid = false;
+  }
+  return valid;
+}
+
+async function placeOrder() {
+  if (!validateForm()) {
+    Toast.error('Please fill in all required fields.');
+    return;
+  }
+  const btn = document.getElementById('placeOrderBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px"></div> Placing Order…';
+
+  try {
+    const items = Cart.get();
+    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+    const district = document.getElementById('districtSelect').value;
+    const area = document.getElementById('areaInput').value;
+
+    const orderData = {
+      customer_name: document.getElementById('customerName').value.trim(),
+      customer_phone: document.getElementById('customerPhone').value.trim(),
+      customer_email: document.getElementById('customerEmail').value.trim(),
+      shipping_address: `${document.getElementById('shippingAddress').value.trim()}, ${area ? area + ', ' : ''}${district}`,
+      district,
+      items: items.map(i => ({
+        productId: i.productId, productName: i.productName, productCode: i.productCode,
+        size: i.size, qty: i.qty, price: i.price, total: i.price * i.qty
+      })),
+      subtotal: orderSummary.subtotal,
+      discount_amount: orderSummary.discountAmount,
+      delivery_charge: orderSummary.deliveryCharge,
+      total_amount: orderSummary.total,
+      payment_method: paymentMethod,
+      order_notes: document.getElementById('orderNotes').value.trim()
+    };
+
+    const order = await Orders.create(orderData);
+
+    // Save/update customer
+    try {
+      const customers = await API.getAll('lc_customers');
+      const existing = customers.find(c => c.phone === orderData.customer_phone);
+      if (existing) {
+        await API.patch('lc_customers', existing.id, {
+          total_orders: (existing.total_orders || 0) + 1,
+          total_spent: (existing.total_spent || 0) + orderSummary.total
+        });
+      } else {
+        await API.post('lc_customers', {
+          name: orderData.customer_name,
+          phone: orderData.customer_phone,
+          email: orderData.customer_email,
+          address: orderData.shipping_address,
+          district,
+          total_orders: 1,
+          total_spent: orderSummary.total,
+          status: 'active'
+        });
+      }
+    } catch(e) { console.warn('Customer save failed', e); }
+
+    // Clear cart
+    Cart.clear();
+
+    // Show success modal
+    document.getElementById('successOrderNumber').textContent = order.order_number;
+    document.getElementById('successPhone').textContent = orderData.customer_phone;
+    document.getElementById('successModal').classList.remove('hidden');
+
+  } catch(e) {
+    Toast.error('Failed to place order. Please try again or call us.');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check-circle"></i> Place Order';
+  }
+}
+</script>
+
+<style>
+.page-hero { background:var(--gradient-hero); color:white; padding:40px 0 30px; text-align:center; }
+.page-hero-title { font-family:var(--font-heading); font-size:clamp(1.8rem,3vw,2.8rem); font-weight:900; margin-bottom:12px; }
+.page-hero .breadcrumb { font-size:0.85rem; color:rgba(255,255,255,0.5); }
+.page-hero .breadcrumb a { color:var(--brand-teal); }
+.checkout-steps { background:white; border-bottom:1px solid var(--border-light); padding:16px 0; }
+.steps-bar { display:flex; align-items:center; justify-content:center; gap:0; }
+.step { display:flex; align-items:center; gap:8px; font-size:0.85rem; font-weight:600; color:var(--text-muted); }
+.step.active { color:var(--brand-blue); }
+.s-dot { width:28px; height:28px; border-radius:50%; background:var(--border-light); display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; }
+.step.active .s-dot { background:var(--gradient-primary); color:white; }
+.step-line { width:60px; height:2px; background:var(--border-light); }
+.checkout-section { padding:40px 0; background:var(--surface-light); }
+.checkout-layout { display:grid; grid-template-columns:1fr 380px; gap:28px; align-items:start; }
+.checkout-card { background:white; border-radius:var(--radius-lg); padding:24px; margin-bottom:20px; box-shadow:0 2px 16px rgba(0,0,0,0.06); }
+.cc-title { display:flex; align-items:center; gap:10px; font-weight:700; font-size:1rem; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid var(--border-light); }
+.cc-title i { color:var(--brand-blue); }
+.optional { font-size:0.75rem; color:var(--text-muted); font-weight:400; }
+.field-error { font-size:0.8rem; color:var(--danger); margin-top:4px; display:flex; align-items:center; gap:4px; }
+.form-control.error { border-color:var(--danger); }
+.payment-options { display:flex; flex-direction:column; gap:12px; }
+.payment-option { display:flex; align-items:center; padding:14px 16px; border:2px solid var(--border-light); border-radius:var(--radius-md); cursor:pointer; transition:var(--transition-fast); }
+.payment-option:hover, .payment-option.selected { border-color:var(--brand-blue); background:rgba(74,144,226,0.04); }
+.payment-option input[type="radio"] { margin-right:12px; accent-color:var(--brand-blue); }
+.po-content { display:flex; align-items:center; gap:12px; }
+.po-icon { font-size:1.5rem; }
+.po-content strong { display:block; font-size:0.9rem; }
+.po-content small { font-size:0.8rem; color:var(--text-muted); }
+.online-payment-box { display:flex; align-items:flex-start; gap:12px; background:rgba(52,152,219,0.08); border:1px solid rgba(52,152,219,0.25); padding:14px; border-radius:var(--radius-md); margin-top:16px; font-size:0.85rem; }
+.online-payment-box i { color:var(--info); font-size:1.1rem; flex-shrink:0; margin-top:2px; }
+.online-payment-box strong { display:block; margin-bottom:4px; }
+.online-payment-box p { color:var(--text-muted); }
+.checkout-summary-panel { position:sticky; top:90px; }
+.co-items-list { max-height:280px; overflow-y:auto; margin-bottom:16px; display:flex; flex-direction:column; gap:10px; }
+.co-item { display:flex; align-items:center; gap:10px; }
+.co-emoji { width:44px; height:44px; background:linear-gradient(135deg,#f0f3ff,#e8ecfc); border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:1.8rem; flex-shrink:0; }
+.co-info { flex:1; }
+.co-name { font-size:0.9rem; font-weight:600; }
+.co-meta { font-size:0.75rem; color:var(--text-muted); }
+.co-price { font-weight:700; font-size:0.9rem; color:var(--brand-blue); }
+.order-security-note { text-align:center; font-size:0.78rem; color:var(--text-muted); margin-top:10px; display:flex; align-items:center; justify-content:center; gap:4px; }
+.trust-info-panel { background:white; border-radius:var(--radius-lg); padding:20px; box-shadow:0 2px 16px rgba(0,0,0,0.06); display:flex; flex-direction:column; gap:14px; }
+.ti-item { display:flex; align-items:center; gap:12px; }
+.ti-item i { width:36px; height:36px; background:linear-gradient(135deg,#f0f4ff,#f5f0ff); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--brand-blue); font-size:0.9rem; flex-shrink:0; }
+.ti-item strong { display:block; font-size:0.875rem; }
+.ti-item small { font-size:0.78rem; color:var(--text-muted); }
+.success-modal { text-align:center; }
+.success-icon { font-size:4rem; margin-bottom:16px; }
+.success-modal h2 { font-family:var(--font-heading); font-size:1.6rem; font-weight:800; margin-bottom:12px; color:var(--success); }
+.order-number-box { background:var(--gradient-primary); color:white; padding:14px 24px; border-radius:var(--radius-md); font-size:1.3rem; font-weight:800; letter-spacing:2px; margin:16px auto; display:inline-block; }
+.success-msg { color:var(--text-muted); margin-bottom:24px; }
+.success-actions { display:flex; gap:12px; justify-content:center; }
+@media (max-width:900px) { .checkout-layout { grid-template-columns:1fr; } .checkout-summary-panel { position:static; } .grid-2 { grid-template-columns:1fr; } }
+</style>
+</body>
+</html>

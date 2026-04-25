@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Login – Luggage Cover BD</title>
+  <link rel="stylesheet" href="css/brand.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css"/>
+  <style>
+    body { background: var(--gradient-hero); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .login-container { width: 100%; max-width: 420px; }
+    .login-card { background: white; border-radius: var(--radius-xl); padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+    .login-header { text-align: center; margin-bottom: 32px; }
+    .login-logo { font-size: 2.5rem; margin-bottom: 12px; }
+    .login-title { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800; color: var(--text-dark); margin-bottom: 4px; }
+    .login-sub { font-size: 0.85rem; color: var(--text-muted); }
+    .admin-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(74,144,226,0.1); color: var(--brand-blue); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-bottom: 16px; }
+    .form-group { margin-bottom: 20px; }
+    .form-label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 8px; color: var(--text-dark); }
+    .input-wrap { position: relative; }
+    .input-wrap i.prefix { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+    .input-wrap input { width: 100%; padding: 12px 44px; border: 2px solid var(--border-light); border-radius: var(--radius-md); font-size: 0.95rem; transition: var(--transition-fast); }
+    .input-wrap input:focus { border-color: var(--brand-blue); box-shadow: 0 0 0 3px rgba(74,144,226,0.15); }
+    .input-wrap .toggle-pass { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; }
+    .login-btn { width: 100%; padding: 14px; border-radius: var(--radius-md); background: var(--gradient-primary); color: white; font-size: 1rem; font-weight: 700; cursor: pointer; border: none; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(74,144,226,0.4); }
+    .login-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+    .login-error { background: rgba(231,76,60,0.08); border: 1px solid rgba(231,76,60,0.3); color: var(--danger); padding: 12px 16px; border-radius: var(--radius-md); font-size: 0.875rem; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+    .login-footer { text-align: center; margin-top: 24px; font-size: 0.8rem; color: var(--text-muted); }
+    .login-footer a { color: var(--brand-blue); }
+    .credentials-hint { background: linear-gradient(135deg,#f0f4ff,#f5f0ff); border: 1px solid rgba(74,144,226,0.2); border-radius: var(--radius-md); padding: 14px 16px; font-size: 0.8rem; color: var(--text-muted); margin-top: 20px; }
+    .credentials-hint strong { color: var(--brand-blue); display: block; margin-bottom: 6px; }
+    .security-notice { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--text-muted); justify-content: center; margin-top: 16px; }
+    .orb-bg { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+    .orb-1 { position: absolute; width: 400px; height: 400px; background: var(--brand-blue); border-radius: 50%; filter: blur(100px); opacity: 0.2; top: -100px; left: -100px; animation: orbFloat 8s ease-in-out infinite; }
+    .orb-2 { position: absolute; width: 300px; height: 300px; background: var(--brand-purple); border-radius: 50%; filter: blur(80px); opacity: 0.15; bottom: -50px; right: -50px; animation: orbFloat 10s ease-in-out infinite reverse; }
+    @keyframes orbFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
+    .login-container { position: relative; z-index: 1; }
+  </style>
+</head>
+<body>
+
+<div class="orb-bg"><div class="orb-1"></div><div class="orb-2"></div></div>
+
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo">✈️</div>
+      <div class="admin-badge"><i class="fas fa-shield-alt"></i> Admin Panel</div>
+      <div class="login-title">Luggage Cover BD</div>
+      <div class="login-sub">Business Management System</div>
+    </div>
+
+    <div id="loginError" class="login-error hidden">
+      <i class="fas fa-exclamation-circle"></i>
+      <span id="loginErrorMsg">Invalid username or password.</span>
+    </div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <div class="input-wrap">
+          <i class="fas fa-user prefix"></i>
+          <input type="text" id="loginUsername" placeholder="Enter username" autocomplete="username" required/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-wrap">
+          <i class="fas fa-lock prefix"></i>
+          <input type="password" id="loginPassword" placeholder="Enter password" autocomplete="current-password" required/>
+          <button type="button" class="toggle-pass" onclick="togglePassword()">
+            <i class="fas fa-eye" id="passIcon"></i>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="login-btn" id="loginBtn">
+        <i class="fas fa-sign-in-alt"></i> Sign In to Admin
+      </button>
+    </form>
+
+    <div class="credentials-hint">
+      <strong><i class="fas fa-info-circle"></i> Default Login Credentials</strong>
+      Username: <strong>admin</strong> &nbsp;|&nbsp; Password: <strong>lcbd@Admin2024!</strong>
+      <br/><small>Change password in Admin → Settings → Users after first login.</small>
+    </div>
+
+    <div class="security-notice">
+      <i class="fas fa-lock"></i> Secure admin access — only authorized personnel
+    </div>
+
+    <div class="login-footer">
+      <a href="index.html"><i class="fas fa-arrow-left"></i> Back to Store</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+// If already logged in, redirect to admin
+if (AdminAuth.isLoggedIn()) {
+  window.location.href = 'admin.html';
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const errEl = document.getElementById('loginError');
+  errEl.classList.add('hidden');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px"></div> Signing in…';
+
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+
+  const result = await AdminAuth.login(username, password);
+  if (result.success) {
+    btn.innerHTML = '<i class="fas fa-check"></i> Welcome! Redirecting…';
+    setTimeout(() => { window.location.href = 'admin.html'; }, 800);
+  } else {
+    document.getElementById('loginErrorMsg').textContent = result.message;
+    errEl.classList.remove('hidden');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In to Admin';
+  }
+}
+
+function togglePassword() {
+  const input = document.getElementById('loginPassword');
+  const icon = document.getElementById('passIcon');
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.className = 'fas fa-eye-slash';
+  } else {
+    input.type = 'password';
+    icon.className = 'fas fa-eye';
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Product – Luggage Cover BD</title>
+  <link rel="stylesheet" href="css/brand.css"/>
+  <link rel="stylesheet" href="css/store.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.0/css/all.min.css"/>
+  <style>
+  /* ===== PRODUCT GALLERY — 5-6 Images ===== */
+  .main-image-wrapper {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: linear-gradient(135deg,#f0f3ff,#e8ecfc);
+  }
+  .main-image {
+    aspect-ratio: 4/3;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg,#f0f3ff,#e8ecfc);
+    font-size: 5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .gallery-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(26,31,58,0.7);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    font-size: 0.9rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    z-index: 5;
+    transition: all 0.2s ease;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .main-image-wrapper:hover .gallery-arrow { opacity: 1; }
+  .gallery-prev { left: 12px; }
+  .gallery-next { right: 12px; }
+  .gallery-arrow:hover { background: var(--brand-blue); }
+  .gallery-counter {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(26,31,58,0.75);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    z-index: 5;
+  }
+  .gallery-zoom-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(26,31,58,0.7);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    font-size: 0.85rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    z-index: 5;
+    transition: all 0.2s ease;
+    opacity: 0;
+  }
+  .main-image-wrapper:hover .gallery-zoom-btn { opacity: 1; }
+  .gallery-zoom-btn:hover { background: var(--brand-blue); }
+  .gallery-thumbnails {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .gallery-thumb {
+    width: 68px; height: 68px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid var(--border-light);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: linear-gradient(135deg,#f0f3ff,#e8ecfc);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .gallery-thumb:hover { border-color: var(--brand-blue); transform: scale(1.05); }
+  .gallery-thumb.active { border-color: var(--brand-blue); box-shadow: 0 0 0 2px rgba(74,144,226,0.3); }
+  .thumb-emoji { font-size: 1.8rem; }
+
+  /* ===== LIGHTBOX ===== */
+  .gallery-lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+  }
+  .gallery-lightbox.hidden { display: none; }
+  .lb-close {
+    position: fixed;
+    top: 20px; right: 20px;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    color: white; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    z-index: 10000;
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: background 0.2s;
+  }
+  .lb-close:hover { background: var(--danger); }
+  .lb-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    color: white; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    z-index: 10000;
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: background 0.2s;
+  }
+  .lb-prev { left: 20px; }
+  .lb-next { right: 20px; }
+  .lb-arrow:hover { background: var(--brand-blue); }
+  .lb-main-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    max-width: 90vw;
+  }
+  .lb-main { display: flex; align-items: center; justify-content: center; }
+  .lb-counter { color: rgba(255,255,255,0.6); font-size: 0.85rem; }
+  .lb-thumbs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .lb-thumb-btn {
+    width: 56px; height: 56px;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 2px solid rgba(255,255,255,0.2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: rgba(255,255,255,0.1);
+  }
+  .lb-thumb-btn.active { border-color: var(--brand-blue); }
+  .lb-thumb-btn:hover { border-color: rgba(255,255,255,0.6); }
+  </style>
+</head>
+<body>
+
+<div class="promo-bar">🎉 <span>BUY 4+ COVERS = 15% OFF</span> — Applied automatically at checkout ✈️</div>
+
+<header class="site-header" id="siteHeader">
+  <div class="container">
+    <nav class="navbar">
+      <a href="index.html" class="nav-logo">
+        <div class="logo-icon">✈️</div>
+        <div class="logo-text"><span class="logo-main">LUGGAGE</span><span class="logo-sub">COVER BD</span></div>
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="shop.html" class="nav-link">Shop</a></li>
+        <li><a href="about.html" class="nav-link">About</a></li>
+        <li><a href="faq.html" class="nav-link">FAQ</a></li>
+        <li><a href="contact.html" class="nav-link">Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="cart.html" class="cart-btn"><i class="fas fa-shopping-bag"></i><span class="cart-badge" style="display:none">0</span></a>
+        <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- LOADING STATE -->
+<div id="loadingState" class="product-loading">
+  <div class="spinner"></div>
+  <p>Loading product…</p>
+</div>
+
+<!-- PRODUCT CONTENT (hidden until loaded) -->
+<div id="productContent" class="hidden">
+
+  <!-- BREADCRUMB -->
+  <div class="product-breadcrumb">
+    <div class="container">
+      <a href="index.html">Home</a> / <a href="shop.html">Shop</a> / <span id="breadcrumbName">Product</span>
+    </div>
+  </div>
+
+  <!-- MAIN PRODUCT SECTION -->
+  <section class="product-section">
+    <div class="container">
+      <div class="product-layout">
+
+        <!-- Image Gallery (5-6 images) -->
+        <div class="product-gallery">
+          <!-- Main Image Display -->
+          <div class="main-image-wrapper">
+            <div class="main-image" id="mainImage">
+              <div class="product-emoji-huge" id="productEmoji">🧳</div>
+            </div>
+            <!-- Prev/Next Arrows -->
+            <button class="gallery-arrow gallery-prev" onclick="galleryNav(-1)" aria-label="Previous image">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="gallery-arrow gallery-next" onclick="galleryNav(1)" aria-label="Next image">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+            <!-- Image Counter -->
+            <div class="gallery-counter" id="galleryCounter">1 / 1</div>
+            <!-- Zoom Button -->
+            <button class="gallery-zoom-btn" onclick="openLightbox()" title="View full screen">
+              <i class="fas fa-expand"></i>
+            </button>
+          </div>
+          <!-- Thumbnail Strip (up to 6) -->
+          <div class="gallery-thumbnails" id="galleryThumbs">
+            <!-- Filled dynamically by JS -->
+          </div>
+          <div class="product-badges-row">
+            <span class="badge badge-teal"><i class="fas fa-truck"></i> COD Available</span>
+            <span class="badge badge-primary"><i class="fas fa-shield-alt"></i> Quality Guaranteed</span>
+          </div>
+        </div>
+
+        <!-- LIGHTBOX OVERLAY -->
+        <div class="gallery-lightbox hidden" id="galleryLightbox" onclick="closeLightbox()">
+          <button class="lb-close" onclick="closeLightbox()"><i class="fas fa-times"></i></button>
+          <button class="lb-arrow lb-prev" onclick="event.stopPropagation();galleryNav(-1)"><i class="fas fa-chevron-left"></i></button>
+          <div class="lb-main-wrap" onclick="event.stopPropagation()">
+            <div class="lb-main" id="lbMain"></div>
+            <div class="lb-counter" id="lbCounter"></div>
+          </div>
+          <button class="lb-arrow lb-next" onclick="event.stopPropagation();galleryNav(1)"><i class="fas fa-chevron-right"></i></button>
+          <div class="lb-thumbs" id="lbThumbs"></div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="product-info">
+          <div class="product-code-label" id="productCodeLabel">CODE: —</div>
+          <h1 class="product-title" id="productTitle">Loading…</h1>
+
+          <!-- PRICE — Updates dynamically with size selection -->
+          <div class="product-price-block">
+            <div class="current-price" id="currentPrice">৳ —</div>
+            <div class="price-size-note" id="priceSizeNote">Select a size to see price</div>
+          </div>
+
+          <p class="product-desc" id="productDesc">Loading description…</p>
+
+          <!-- SIZE SELECTOR — KEY FEATURE: variant-based pricing -->
+          <div class="size-selector-section">
+            <div class="size-selector-header">
+              <span class="size-selector-label">Select Size</span>
+              <a href="faq.html#sizing" class="size-guide-link"><i class="fas fa-ruler"></i> Size Guide</a>
+            </div>
+            <div class="size-options" id="sizeOptions">
+              <button class="size-option" data-size="small" data-price="990"
+                onclick="selectSize('small')">
+                <span class="so-size">Small</span>
+                <span class="so-range">18" – 20"</span>
+                <span class="so-price">৳ 990</span>
+              </button>
+              <button class="size-option" data-size="medium" data-price="1190"
+                onclick="selectSize('medium')">
+                <span class="so-size">Medium</span>
+                <span class="so-range">20" – 24"</span>
+                <span class="so-price">৳ 1,190</span>
+              </button>
+              <button class="size-option" data-size="large" data-price="1490"
+                onclick="selectSize('large')">
+                <span class="so-size">Large</span>
+                <span class="so-range">24" – 28"</span>
+                <span class="so-price">৳ 1,490</span>
+              </button>
+            </div>
+            <div class="size-error hidden" id="sizeError">
+              <i class="fas fa-exclamation-circle"></i> Please select a size before adding to cart.
+            </div>
+          </div>
+
+          <!-- QUANTITY -->
+          <div class="qty-section">
+            <label class="qty-label">Quantity</label>
+            <div class="qty-control">
+              <button class="qty-btn" onclick="changeQty(-1)"><i class="fas fa-minus"></i></button>
+              <span class="qty-value" id="qtyValue">1</span>
+              <button class="qty-btn" onclick="changeQty(1)"><i class="fas fa-plus"></i></button>
+            </div>
+            <div class="stock-info" id="stockInfo"></div>
+          </div>
+
+          <!-- ADD TO CART -->
+          <div class="product-actions">
+            <button class="btn btn-primary btn-lg w-full" id="addToCartBtn" onclick="addToCart()">
+              <i class="fas fa-shopping-bag"></i> Add to Cart
+            </button>
+            <a href="cart.html" class="btn btn-teal btn-lg w-full" id="buyNowBtn"
+               onclick="addToCartAndCheckout(); return false;">
+              <i class="fas fa-bolt"></i> Buy Now
+            </a>
+          </div>
+
+          <!-- BULK DISCOUNT REMINDER -->
+          <div class="bulk-reminder">
+            <i class="fas fa-tag"></i>
+            <span>Add <strong id="bulkQtyNeeded">4</strong> or more total items → Get <strong>15% OFF!</strong></span>
+          </div>
+
+          <!-- PRODUCT FEATURES -->
+          <div class="product-features">
+            <div class="pf-item"><i class="fas fa-check-circle"></i> High-Quality Polyester + Spandex Blend</div>
+            <div class="pf-item"><i class="fas fa-check-circle"></i> Elastic & Flexible 4-Way Stretch</div>
+            <div class="pf-item"><i class="fas fa-check-circle"></i> Dust, Stain & Scratch Resistant</div>
+            <div class="pf-item"><i class="fas fa-check-circle"></i> Vibrant Fade-Resistant Print</div>
+            <div class="pf-item"><i class="fas fa-check-circle"></i> Easy to Put On — Fits in Seconds</div>
+            <div class="pf-item"><i class="fas fa-truck"></i> Delivery: Dhaka ৳60 | Outside ৳120</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCT DETAILS TABS -->
+  <section class="product-tabs-section">
+    <div class="container">
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="showTab('details')">Product Details</button>
+        <button class="tab-btn" onclick="showTab('howto')">How to Use</button>
+        <button class="tab-btn" onclick="showTab('sizing')">Size Guide</button>
+        <button class="tab-btn" onclick="showTab('shipping')">Shipping & Returns</button>
+      </div>
+
+      <div class="tab-content" id="tab-details">
+        <div class="tab-grid">
+          <div>
+            <h3>Product Information</h3>
+            <table class="info-table">
+              <tr><th>Material</th><td>High-Quality Polyester + Spandex Blend</td></tr>
+              <tr><th>Fit Type</th><td>Elastic, 4-Way Stretch</td></tr>
+              <tr><th>Design Code</th><td id="tabCode">—</td></tr>
+              <tr><th>Available Sizes</th><td>Small, Medium, Large</td></tr>
+              <tr><th>Care</th><td>Machine washable, gentle cycle</td></tr>
+              <tr><th>Origin</th><td>Bangladesh</td></tr>
+            </table>
+          </div>
+          <div>
+            <h3>Why You'll Love It</h3>
+            <ul class="detail-list">
+              <li>Instantly recognizable on any baggage carousel</li>
+              <li>Protects from dust, stains, scratches & light water</li>
+              <li>Stretches to hug your luggage perfectly</li>
+              <li>Lightweight — barely adds any weight</li>
+              <li>Easy to remove, wash, and reuse</li>
+              <li>Makes a perfect travel gift</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content hidden" id="tab-howto">
+        <div class="howto-steps-inline">
+          <div class="step-inline"><span class="si-num">1</span><div><strong>Place on Top</strong><p>Lay the cover over the top of your suitcase, handle-hole aligned.</p></div></div>
+          <div class="step-inline"><span class="si-num">2</span><div><strong>Pull Down</strong><p>Gently stretch and pull the cover down all four sides.</p></div></div>
+          <div class="step-inline"><span class="si-num">3</span><div><strong>Adjust Fit</strong><p>Align openings for handles and wheels. Spandex ensures a snug fit.</p></div></div>
+          <div class="step-inline"><span class="si-num">4</span><div><strong>Done!</strong><p>Secure the bottom closure. Your luggage is protected and ready to fly!</p></div></div>
+        </div>
+      </div>
+
+      <div class="tab-content hidden" id="tab-sizing">
+        <div class="sizing-table-wrap">
+          <h3>Luggage Cover Size Guide</h3>
+          <table class="sizing-table">
+            <thead>
+              <tr><th>Cover Size</th><th>Luggage Size Range</th><th>Price</th><th>Best For</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Small</strong></td>
+                <td>18" – 20" (45–50 cm)</td>
+                <td>৳ 990</td>
+                <td>Cabin / Carry-On bags</td>
+              </tr>
+              <tr>
+                <td><strong>Medium</strong></td>
+                <td>20" – 24" (50–61 cm)</td>
+                <td>৳ 1,190</td>
+                <td>Standard checked bags</td>
+              </tr>
+              <tr>
+                <td><strong>Large</strong></td>
+                <td>24" – 28" (61–71 cm)</td>
+                <td>৳ 1,490</td>
+                <td>Large checked bags & family luggage</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="sizing-tip"><i class="fas fa-info-circle"></i> <strong>Tip:</strong> If your bag is between sizes, size up for the best stretch coverage.</p>
+        </div>
+      </div>
+
+      <div class="tab-content hidden" id="tab-shipping">
+        <div class="tab-grid">
+          <div>
+            <h3>Delivery</h3>
+            <ul class="detail-list">
+              <li><strong>Inside Dhaka:</strong> ৳60 | 1–2 business days</li>
+              <li><strong>Outside Dhaka:</strong> ৳120 | 2–4 business days</li>
+              <li><strong>Cash on Delivery (COD)</strong> available nationwide</li>
+              <li><strong>bKash & Nagad</strong> online payment accepted</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Returns & Refunds</h3>
+            <ul class="detail-list">
+              <li>7-day return window from delivery date</li>
+              <li>Product must be unused and in original condition</li>
+              <li>Contact us by phone or email to start a return</li>
+              <li>Refunds processed within 3–5 business days</li>
+            </ul>
+            <a href="returns.html" class="btn btn-outline" style="margin-top:16px">Full Return Policy</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RELATED PRODUCTS -->
+  <section class="related-section section section-light">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">You May Also <span class="text-gradient">Like</span></h2>
+      </div>
+      <div class="grid grid-4" id="relatedGrid"></div>
+    </div>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo"><span class="logo-icon">✈️</span><span>LUGGAGE COVER BD</span></div>
+        <p>Your premium travel partner.</p>
+        <div class="footer-social">
+          <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+      <div class="footer-links"><h4>Shop</h4><ul>
+        <li><a href="shop.html">All Designs</a></li><li><a href="faq.html#sizing">Size Guide</a></li>
+        <li><a href="cart.html">My Cart</a></li></ul>
+      </div>
+      <div class="footer-links"><h4>Help</h4><ul>
+        <li><a href="faq.html">FAQ</a></li><li><a href="returns.html">Returns</a></li>
+        <li><a href="contact.html">Contact</a></li></ul>
+      </div>
+      <div class="footer-contact"><h4>Contact</h4>
+        <div class="footer-contact-list">
+          <div class="fc-item"><i class="fas fa-phone"></i><a href="tel:+01328152066">+01328-152066</a></div>
+          <div class="fc-item"><i class="fas fa-phone"></i><a href="tel:+01788039222">+01788-039222</a></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom"><p>© 2024 Luggage Cover BD. All rights reserved.</p></div>
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script>
+let currentProduct = null;
+let selectedSize = null;
+let qty = 1;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const header = document.getElementById('siteHeader');
+  window.addEventListener('scroll', () => header.classList.toggle('scrolled', window.scrollY > 60));
+  document.getElementById('hamburger').addEventListener('click', () => {
+    document.getElementById('navLinks').classList.toggle('open');
+    document.getElementById('hamburger').classList.toggle('active');
+  });
+
+  const params = new URLSearchParams(window.location.search);
+  const productId = params.get('id');
+
+  if (!productId) {
+    window.location.href = 'shop.html';
+    return;
+  }
+
+  try {
+    await Settings.load();
+    currentProduct = await Products.getById(productId);
+    if (!currentProduct) { window.location.href = 'shop.html'; return; }
+    renderProduct(currentProduct);
+
+    // Load related products
+    const all = await Products.getAll();
+    const related = all.filter(p => p.id !== currentProduct.id).slice(0, 4);
+    const relGrid = document.getElementById('relatedGrid');
+    relGrid.innerHTML = related.map(p => renderRelatedCard(p)).join('');
+
+    document.getElementById('loadingState').classList.add('hidden');
+    document.getElementById('productContent').classList.remove('hidden');
+
+    // Update page title and SEO
+    document.title = `${currentProduct.name} — Luggage Cover BD`;
+    if (currentProduct.seo_description) {
+      document.querySelector('meta[name="description"]')?.setAttribute('content', currentProduct.seo_description);
+    }
+
+    // Update bulk qty needed
+    updateBulkReminder();
+
+  } catch(e) {
+    console.error(e);
+    document.getElementById('loadingState').innerHTML = '<p>Product not found. <a href="shop.html">Go to Shop</a></p>';
+  }
+});
+
+// ===== GALLERY STATE =====
+let galleryImages = [];
+let galleryActiveIdx = 0;
+
+function buildGallery(p) {
+  const emoji = Products.getEmoji(p);
+  // Build images array: main image + up to 5 extra gallery images
+  galleryImages = [];
+  if (p.image_url) galleryImages.push({ url: p.image_url, alt: p.name });
+  // Support gallery_1 through gallery_5 fields
+  for (let i = 1; i <= 5; i++) {
+    const key = `gallery_${i}`;
+    if (p[key]) galleryImages.push({ url: p[key], alt: `${p.name} — Image ${i+1}` });
+  }
+  // If no images, show emoji placeholder
+  if (galleryImages.length === 0) {
+    galleryImages.push({ url: null, alt: p.name, emoji: emoji });
+  }
+  galleryActiveIdx = 0;
+  renderGalleryMain();
+  renderGalleryThumbs(p.name);
+}
+
+function renderGalleryMain() {
+  const img = galleryImages[galleryActiveIdx];
+  const mainEl = document.getElementById('mainImage');
+  if (img.url) {
+    mainEl.innerHTML = `<img src="${img.url}" alt="${img.alt}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-lg);" loading="lazy"/>`;
+  } else {
+    mainEl.innerHTML = `<div class="product-emoji-huge">${img.emoji || '🧳'}</div>`;
+  }
+  const counter = document.getElementById('galleryCounter');
+  if (counter) counter.textContent = `${galleryActiveIdx + 1} / ${galleryImages.length}`;
+  // Update active thumbnail
+  document.querySelectorAll('.gallery-thumb').forEach((th, i) => {
+    th.classList.toggle('active', i === galleryActiveIdx);
+  });
+  // Update lightbox if open
+  const lb = document.getElementById('galleryLightbox');
+  if (lb && !lb.classList.contains('hidden')) renderLightboxMain();
+}
+
+function renderGalleryThumbs(name) {
+  const thumbsEl = document.getElementById('galleryThumbs');
+  if (!thumbsEl) return;
+  if (galleryImages.length <= 1) { thumbsEl.innerHTML = ''; return; }
+  thumbsEl.innerHTML = galleryImages.map((img, i) => `
+    <button class="gallery-thumb${i === 0 ? ' active' : ''}" onclick="galleryGoTo(${i})" title="Image ${i+1}">
+      ${img.url
+        ? `<img src="${img.url}" alt="${img.alt}" style="width:100%;height:100%;object-fit:cover;"/>`
+        : `<div class="thumb-emoji">${img.emoji || '🧳'}</div>`}
+    </button>`).join('');
+}
+
+function galleryGoTo(idx) {
+  galleryActiveIdx = Math.max(0, Math.min(idx, galleryImages.length - 1));
+  renderGalleryMain();
+}
+
+function galleryNav(dir) {
+  galleryGoTo(galleryActiveIdx + dir < 0 ? galleryImages.length - 1 :
+    galleryActiveIdx + dir >= galleryImages.length ? 0 : galleryActiveIdx + dir);
+}
+
+// Lightbox
+function openLightbox() {
+  const lb = document.getElementById('galleryLightbox');
+  if (!lb) return;
+  lb.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  renderLightboxMain();
+  renderLbThumbs();
+}
+function closeLightbox() {
+  const lb = document.getElementById('galleryLightbox');
+  if (!lb) return;
+  lb.classList.add('hidden');
+  document.body.style.overflow = '';
+}
+function renderLightboxMain() {
+  const img = galleryImages[galleryActiveIdx];
+  const lbMain = document.getElementById('lbMain');
+  if (!lbMain) return;
+  if (img.url) {
+    lbMain.innerHTML = `<img src="${img.url}" alt="${img.alt}" style="max-height:70vh;max-width:100%;object-fit:contain;border-radius:8px;"/>`;
+  } else {
+    lbMain.innerHTML = `<div style="font-size:8rem;text-align:center">${img.emoji||'🧳'}</div>`;
+  }
+  const lbCounter = document.getElementById('lbCounter');
+  if (lbCounter) lbCounter.textContent = `${galleryActiveIdx + 1} / ${galleryImages.length}`;
+  document.querySelectorAll('.lb-thumb-btn').forEach((t, i) => t.classList.toggle('active', i === galleryActiveIdx));
+}
+function renderLbThumbs() {
+  const lbThumbs = document.getElementById('lbThumbs');
+  if (!lbThumbs) return;
+  lbThumbs.innerHTML = galleryImages.map((img, i) => `
+    <button class="lb-thumb-btn${i===galleryActiveIdx?' active':''}" onclick="event.stopPropagation();galleryGoTo(${i})">
+      ${img.url ? `<img src="${img.url}" alt="${img.alt}" style="width:100%;height:100%;object-fit:cover"/>` : `<div style="font-size:1.5rem;display:flex;align-items:center;justify-content:center;height:100%">${img.emoji||'🧳'}</div>`}
+    </button>`).join('');
+}
+
+// Keyboard navigation for lightbox
+document.addEventListener('keydown', e => {
+  const lb = document.getElementById('galleryLightbox');
+  if (!lb || lb.classList.contains('hidden')) return;
+  if (e.key === 'ArrowLeft') galleryNav(-1);
+  if (e.key === 'ArrowRight') galleryNav(1);
+  if (e.key === 'Escape') closeLightbox();
+});
+
+function renderProduct(p) {
+  const emoji = Products.getEmoji(p);
+  document.getElementById('productEmoji').textContent = emoji;
+  document.getElementById('productTitle').textContent = p.name;
+  document.getElementById('productCodeLabel').textContent = `CODE: ${p.code}`;
+  document.getElementById('breadcrumbName').textContent = p.name;
+  document.getElementById('productDesc').textContent = p.description;
+  document.getElementById('tabCode').textContent = p.code;
+
+  // Set size prices dynamically
+  const sizeOptions = document.querySelectorAll('.size-option');
+  sizeOptions.forEach(btn => {
+    const size = btn.dataset.size;
+    const price = Products.getPriceForSize(p, size);
+    btn.dataset.price = price;
+    btn.querySelector('.so-price').textContent = `৳ ${price.toLocaleString()}`;
+    const stock = Products.getStockForSize(p, size);
+    if (stock <= 0) {
+      btn.classList.add('out-of-stock');
+      btn.disabled = true;
+    }
+  });
+
+  // Build the gallery with up to 6 images
+  buildGallery(p);
+}
+
+function selectSize(size) {
+  selectedSize = size;
+  qty = 1;
+  document.getElementById('qtyValue').textContent = qty;
+
+  // Update size button states
+  document.querySelectorAll('.size-option').forEach(btn => {
+    btn.classList.toggle('selected', btn.dataset.size === size);
+  });
+
+  // *** KEY: UPDATE PRICE BASED ON SELECTED SIZE ***
+  const priceMap = { small: currentProduct.price_small, medium: currentProduct.price_medium, large: currentProduct.price_large };
+  const sizeLabel = { small: 'Small (18"–20")', medium: 'Medium (20"–24")', large: 'Large (24"–28")' };
+  const price = priceMap[size];
+
+  document.getElementById('currentPrice').textContent = `৳ ${price.toLocaleString()}`;
+  document.getElementById('priceSizeNote').textContent = `For ${sizeLabel[size]}`;
+
+  // Show stock info
+  const stock = Products.getStockForSize(currentProduct, size);
+  const stockEl = document.getElementById('stockInfo');
+  if (stock > 10) stockEl.innerHTML = `<span class="stock-ok"><i class="fas fa-check-circle"></i> In Stock</span>`;
+  else if (stock > 0) stockEl.innerHTML = `<span class="stock-low"><i class="fas fa-exclamation-circle"></i> Only ${stock} left!</span>`;
+  else stockEl.innerHTML = `<span class="stock-out"><i class="fas fa-times-circle"></i> Out of Stock</span>`;
+
+  document.getElementById('sizeError').classList.add('hidden');
+  updateBulkReminder();
+}
+
+function changeQty(delta) {
+  const newQty = qty + delta;
+  if (newQty < 1) return;
+  if (selectedSize) {
+    const stock = Products.getStockForSize(currentProduct, selectedSize);
+    if (newQty > stock && stock > 0) { Toast.warning(`Only ${stock} in stock.`); return; }
+  }
+  qty = newQty;
+  document.getElementById('qtyValue').textContent = qty;
+  updateBulkReminder();
+}
+
+async function updateBulkReminder() {
+  await Settings.load();
+  const minQty = Settings.getNumber('promo_bulk_qty', 4);
+  const cartQty = Cart.getTotalQty();
+  const totalIfAdded = cartQty + (selectedSize ? qty : 0);
+  const needed = Math.max(0, minQty - totalIfAdded);
+  const el = document.getElementById('bulkQtyNeeded');
+  if (el) {
+    if (needed <= 0) {
+      el.closest('.bulk-reminder').innerHTML = '<i class="fas fa-check-circle" style="color:var(--success)"></i> <span>🎉 15% discount will be applied at checkout!</span>';
+    } else {
+      el.textContent = needed;
+    }
+  }
+}
+
+function addToCart() {
+  if (!selectedSize) {
+    document.getElementById('sizeError').classList.remove('hidden');
+    document.getElementById('sizeOptions').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  Cart.add(currentProduct, selectedSize, qty);
+  updateBulkReminder();
+}
+
+function addToCartAndCheckout() {
+  if (!selectedSize) {
+    document.getElementById('sizeError').classList.remove('hidden');
+    document.getElementById('sizeOptions').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  Cart.add(currentProduct, selectedSize, qty);
+  setTimeout(() => { window.location.href = 'cart.html'; }, 500);
+}
+
+function showTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.remove('hidden');
+  event.target.classList.add('active');
+}
+
+function renderRelatedCard(p) {
+  const emoji = Products.getEmoji(p);
+  return `
+    <div class="product-card" onclick="window.location='product.html?id=${p.id}'">
+      <div class="product-card-image">
+        ${p.image_url ? `<img src="${p.image_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover"/>` : `<div class="product-emoji-bg">${emoji}</div>`}
+      </div>
+      <div class="product-card-body">
+        <div class="product-card-code"># ${p.code}</div>
+        <div class="product-card-name">${p.name}</div>
+        <div class="product-card-price">From ৳ ${p.price_small.toLocaleString()}</div>
+      </div>
+    </div>`;
+}
+</script>
+
+<style>
+.product-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 16px; color: var(--text-muted); }
+.product-breadcrumb { background: var(--surface-light); padding: 12px 0; font-size: 0.85rem; color: var(--text-muted); }
+.product-breadcrumb .container { display: flex; gap: 8px; align-items: center; }
+.product-breadcrumb a { color: var(--brand-blue); }
+.product-section { padding: 48px 0; }
+.product-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; }
+.product-gallery { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 90px; }
+.main-image { aspect-ratio: 1; background: linear-gradient(135deg,#f0f3ff,#e8ecfc); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.product-emoji-huge { font-size: 8rem; }
+.gallery-thumbnails { display: flex; gap: 10px; }
+.product-badges-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.product-code-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px; }
+.product-title { font-family: var(--font-heading); font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; color: var(--text-dark); margin-bottom: 20px; line-height: 1.2; }
+.product-price-block { background: linear-gradient(135deg,#f0f4ff,#f5f0ff); border-radius: var(--radius-lg); padding: 20px 24px; margin-bottom: 20px; border: 1px solid rgba(74,144,226,0.2); }
+.current-price { font-family: var(--font-heading); font-size: 2.5rem; font-weight: 900; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1.1; transition: all 0.2s ease; }
+.price-size-note { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+.product-desc { color: var(--text-muted); line-height: 1.7; margin-bottom: 28px; }
+.size-selector-section { margin-bottom: 28px; }
+.size-selector-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.size-selector-label { font-weight: 700; font-size: 0.95rem; }
+.size-guide-link { font-size: 0.85rem; color: var(--brand-blue); display: flex; align-items: center; gap: 6px; }
+.size-options { display: flex; gap: 12px; flex-wrap: wrap; }
+.size-option {
+  flex: 1; min-width: 100px;
+  padding: 14px 12px;
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: white;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+}
+.size-option:hover { border-color: var(--brand-blue); box-shadow: 0 4px 16px rgba(74,144,226,0.15); }
+.size-option.selected {
+  border-color: var(--brand-blue);
+  background: linear-gradient(135deg,#f0f4ff,#f5f0ff);
+  box-shadow: 0 4px 16px rgba(74,144,226,0.2);
+}
+.size-option.out-of-stock { opacity: 0.4; cursor: not-allowed; }
+.so-size { display: block; font-weight: 700; font-size: 1rem; color: var(--text-dark); }
+.so-range { display: block; font-size: 0.72rem; color: var(--text-muted); margin: 4px 0; }
+.so-price { display: block; font-weight: 800; font-size: 1rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.size-error { color: var(--danger); font-size: 0.85rem; margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+.qty-section { display: flex; align-items: center; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
+.qty-label { font-weight: 700; font-size: 0.95rem; }
+.qty-control { display: flex; align-items: center; gap: 0; border: 2px solid var(--border-light); border-radius: var(--radius-md); overflow: hidden; }
+.qty-btn { width: 40px; height: 40px; background: var(--surface-light); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: var(--text-dark); transition: var(--transition-fast); }
+.qty-btn:hover { background: var(--brand-blue); color: white; }
+.qty-value { width: 48px; text-align: center; font-weight: 700; font-size: 1rem; }
+.stock-info { font-size: 0.85rem; font-weight: 500; }
+.stock-ok { color: var(--success); }
+.stock-low { color: var(--warning); }
+.stock-out { color: var(--danger); }
+.product-actions { display: flex; gap: 12px; margin-bottom: 20px; }
+.product-actions .btn { flex: 1; }
+.bulk-reminder { display: flex; align-items: center; gap: 10px; background: rgba(64,224,208,0.08); border: 1px solid rgba(64,224,208,0.25); padding: 12px 16px; border-radius: var(--radius-md); font-size: 0.85rem; color: #20bdb0; margin-bottom: 24px; }
+.product-features { display: flex; flex-direction: column; gap: 8px; padding: 20px; background: var(--surface-light); border-radius: var(--radius-md); }
+.pf-item { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: var(--text-dark); }
+.pf-item i { color: var(--brand-blue); width: 16px; }
+.product-tabs-section { padding: 40px 0; background: white; border-top: 1px solid var(--border-light); }
+.tabs-nav { display: flex; gap: 4px; border-bottom: 2px solid var(--border-light); margin-bottom: 32px; flex-wrap: wrap; }
+.tab-btn { padding: 12px 20px; background: none; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: var(--transition-fast); cursor: pointer; }
+.tab-btn:hover { color: var(--brand-blue); }
+.tab-btn.active { color: var(--brand-blue); border-bottom-color: var(--brand-blue); }
+.tab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+.tab-grid h3 { font-weight: 700; margin-bottom: 16px; }
+.info-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.info-table th, .info-table td { padding: 10px 12px; border-bottom: 1px solid var(--border-light); text-align: left; }
+.info-table th { width: 40%; color: var(--text-muted); font-weight: 600; }
+.detail-list { display: flex; flex-direction: column; gap: 10px; }
+.detail-list li { display: flex; align-items: flex-start; gap: 8px; font-size: 0.9rem; }
+.detail-list li::before { content: '✓'; color: var(--brand-blue); font-weight: 700; flex-shrink: 0; }
+.howto-steps-inline { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+.step-inline { display: flex; gap: 16px; padding: 20px; background: var(--surface-light); border-radius: var(--radius-md); }
+.si-num { width: 40px; height: 40px; background: var(--gradient-primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; flex-shrink: 0; }
+.step-inline strong { display: block; font-size: 0.95rem; margin-bottom: 6px; }
+.step-inline p { font-size: 0.85rem; color: var(--text-muted); }
+.sizing-table-wrap h3 { margin-bottom: 20px; }
+.sizing-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.sizing-table th { background: var(--gradient-primary); color: white; padding: 12px 16px; text-align: left; }
+.sizing-table td { padding: 12px 16px; border-bottom: 1px solid var(--border-light); }
+.sizing-table tr:nth-child(2) { background: rgba(74,144,226,0.04); }
+.sizing-tip { margin-top: 16px; font-size: 0.875rem; color: var(--brand-blue); padding: 12px 16px; background: rgba(74,144,226,0.06); border-radius: var(--radius-md); }
+.related-section { padding: 60px 0; }
+@media (max-width: 900px) {
+  .product-layout { grid-template-columns: 1fr; }
+  .product-gallery { position: static; }
+  .tab-grid { grid-template-columns: 1fr; }
+  .howto-steps-inline { grid-template-columns: 1fr; }
+  .size-options { flex-wrap: wrap; }
+  .product-actions { flex-direction: column; }
+}
+</style>
+</body>
+</html>
