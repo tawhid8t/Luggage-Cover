@@ -69,14 +69,15 @@ async function fetchWithRetry(url: string, options: RequestInit = {}, timeout = 
 
 export async function apiGet<T>(
   endpoint: string,
-  params: Record<string, string | number> = {}
+  params: Record<string, string | number> = {},
+  timeout: number = 15000
 ): Promise<T> {
   const qs = new URLSearchParams(
     params as Record<string, string>
   ).toString();
   const url = `${API_BASE}/${endpoint}${qs ? `?${qs}` : ""}`;
   const headers = await authHeaders();
-  const res = await fetchWithRetry(url, { headers }, 15000);
+  const res = await fetchWithRetry(url, { headers }, timeout);
   if (!res.ok) throw new Error(`GET ${endpoint} failed: ${res.status}`);
   const json = await res.json();
   if (json.data) {
