@@ -4,13 +4,13 @@ import AdminLayout from "@/components/admin/admin-layout";
 
 interface Order {
   id: string;
-  order_number?: string;
-  customer_name?: string;
+  orderNumber?: string;
+  customerName?: string;
   items?: { productCode?: string; productName?: string; qty?: number; price?: number; total?: number }[];
-  order_status?: string;
-  total_amount: number;
-  discount_amount?: number;
-  created_at?: string;
+  orderStatus?: string;
+  totalAmount: number;
+  discountAmount?: number;
+  createdAt?: string;
 }
 
 interface Product {
@@ -79,12 +79,12 @@ export default function ReportsPage() {
       rows = [
         ["Order #", "Customer", "Total", "Status", "Payment", "Date"],
         ...orders.map((o) => [
-          o.order_number || o.id?.slice(0, 8) || "",
-          o.customer_name || "",
-          String(o.total_amount || 0),
-          o.order_status || "",
+          o.orderNumber || o.id?.slice(0, 8) || "",
+          o.customerName || "",
+          String(o.totalAmount || 0),
+          o.orderStatus || "",
           "",
-          o.created_at ? new Date(o.created_at).toLocaleDateString() : "",
+          o.createdAt ? new Date(o.createdAt).toLocaleDateString() : "",
         ]),
       ];
     } else if (type === "sales") {
@@ -118,10 +118,10 @@ export default function ReportsPage() {
 
   const formatCurrency = (n: number) => `৳${(n || 0).toLocaleString("en-BD")}`;
 
-  const totalRevenue = orders.filter((o) => o.order_status === "delivered").reduce((s, o) => s + (o.total_amount || 0), 0);
+  const totalRevenue = orders.filter((o) => o.orderStatus === "delivered").reduce((s, o) => s + (o.totalAmount || 0), 0);
   const totalOrders = orders.length;
   const avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
-  const totalDiscount = orders.reduce((s, o) => s + (o.discount_amount || 0), 0);
+  const totalDiscount = orders.reduce((s, o) => s + (o.discountAmount || 0), 0);
 
   const salesByDesign: Record<string, { name: string; code: string; qty: number; revenue: number }> = {};
   orders.forEach((o) => {
@@ -138,7 +138,7 @@ export default function ReportsPage() {
 
   const statusCounts: Record<string, number> = {};
   orders.forEach((o) => {
-    const status = o.order_status || "new";
+    const status = o.orderStatus || "new";
     statusCounts[status] = (statusCounts[status] || 0) + 1;
   });
 

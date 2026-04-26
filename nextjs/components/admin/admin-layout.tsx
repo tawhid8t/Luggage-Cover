@@ -128,7 +128,7 @@ export default function AdminLayout({ children, title, breadcrumb, headerActions
     try {
       const { ordersAPI } = await import("@/lib/api");
       const orders = await ordersAPI.getAll();
-      const count = orders.filter((o: { order_status: string }) => o.order_status === "new").length;
+      const count = orders.filter((o: { orderStatus: string }) => o.orderStatus === "new").length;
       setNewOrdersCount(count);
       if (typeof window !== "undefined") {
         sessionStorage.setItem("lcbd_new_orders_count", String(count));

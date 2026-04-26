@@ -119,10 +119,11 @@ export async function apiPost<T>(
   data: Record<string, unknown>
 ): Promise<T> {
   const headers = await authHeaders();
+  const snakeData = deepSnakeCase(data);
   const res = await fetchWithRetry(`${API_BASE}/${endpoint}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...headers },
-    body: JSON.stringify(data),
+    body: JSON.stringify(snakeData),
   }, 15000);
   if (!res.ok) {
     const err = await res.text();
@@ -141,10 +142,11 @@ export async function apiPatch<T>(
   data: Record<string, unknown>
 ): Promise<T> {
   const headers = await authHeaders();
+  const snakeData = deepSnakeCase(data);
   const res = await fetchWithRetry(`${API_BASE}/${endpoint}/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json", ...headers },
-    body: JSON.stringify(data),
+    body: JSON.stringify(snakeData),
   }, 15000);
   if (!res.ok) throw new Error(`PATCH ${endpoint}/${id} failed`);
   const json = await res.json();
@@ -184,6 +186,7 @@ async function getAll<T>(
 
 const SNAKE_TO_CAMEL: Record<string, string> = {
   _id: "id",
+  // Product fields
   image_url: "imageUrl",
   gallery_1: "gallery1",
   gallery_2: "gallery2",
@@ -201,11 +204,7 @@ const SNAKE_TO_CAMEL: Record<string, string> = {
   seo_description: "seoDescription",
   meta_title: "metaTitle",
   meta_description: "metaDescription",
-  created_at: "createdAt",
-  updated_at: "updatedAt",
-  total_sold: "totalSold",
-  total_views: "totalViews",
-  is_active: "isActive",
+  // Order fields
   order_number: "orderNumber",
   customer_name: "customerName",
   customer_phone: "customerPhone",
@@ -221,6 +220,14 @@ const SNAKE_TO_CAMEL: Record<string, string> = {
   tracking_number: "trackingNumber",
   order_notes: "orderNotes",
   status_history: "statusHistory",
+  product_id: "productId",
+  product_name: "productName",
+  product_code: "productCode",
+  // Customer fields
+  total_orders: "totalOrders",
+  total_spent: "totalSpent",
+  last_order_at: "lastOrderAt",
+  // Batch fields
   batch_name: "batchName",
   batch_date: "batchDate",
   design_codes: "designCodes",
@@ -239,11 +246,13 @@ const SNAKE_TO_CAMEL: Record<string, string> = {
   sell_price_medium: "sellPriceMedium",
   sell_price_large: "sellPriceLarge",
   sell_price_xl: "sellPriceXl",
+  // Content fields
   vendor_name: "vendorName",
   amount_bdt: "amountBdt",
   amount_usd: "amountUsd",
   exchange_rate: "exchangeRate",
   effective_bdt: "effectiveBdt",
+  // FB Campaign fields
   campaign_name: "campaignName",
   usd_spent: "usdSpent",
   bdt_spent: "bdtSpent",
@@ -253,9 +262,11 @@ const SNAKE_TO_CAMEL: Record<string, string> = {
   unit_production_cost: "unitProductionCost",
   delivery_cost_per_order: "deliveryCostPerOrder",
   other_costs_bdt: "otherCostsBdt",
-  // Handle direct camelCase from mongoose timestamps
+  // Mongoose timestamps (preserve as-is)
   createdAt: "createdAt",
   updatedAt: "updatedAt",
+  created_at: "createdAt",
+  updated_at: "updatedAt",
 };
 
 function camelToSnakeCase(str: string): string {
@@ -391,11 +402,11 @@ class ProductsAPI {
 
   getPriceForSize(product: Product, size: ProductSize): number {
     const map: Record<ProductSize, keyof Product> = {
-      small: "price_small",
-      medium: "price_medium",
-      large: "price_large",
+      small: "priceSmall",
+      medium: "priceMedium",
+      large: "priceLarge",
     };
-    return (product[map[size]] as number) || product.price_small || 990;
+    return (product[map[size]] as number) || product.priceSmall || 990;
   }
 
   getEmoji(product: Product): string {
@@ -404,26 +415,26 @@ class ProductsAPI {
 
   getStockForSize(product: Product, size: ProductSize): number {
     const map: Record<ProductSize, keyof Product> = {
-      small: "stock_small",
-      medium: "stock_medium",
-      large: "stock_large",
+      small: "stockSmall",
+      medium: "stockMedium",
+      large: "stockLarge",
     };
     return (product[map[size]] as number) || 0;
   }
 
   getAllImages(product: Product): string[] {
     const images: string[] = [];
-    if (product.image_url) images.push(product.image_url);
-    if (product.gallery_1) images.push(product.gallery_1);
-    if (product.gallery_2) images.push(product.gallery_2);
-    if (product.gallery_3) images.push(product.gallery_3);
-    if (product.gallery_4) images.push(product.gallery_4);
-    if (product.gallery_5) images.push(product.gallery_5);
+    if (product.imageUrl) images.push(product.imageUrl);
+    if (product.gallery1) images.push(product.gallery1);
+    if (product.gallery2) images.push(product.gallery2);
+    if (product.gallery3) images.push(product.gallery3);
+    if (product.gallery4) images.push(product.gallery4);
+    if (product.gallery5) images.push(product.gallery5);
     
     // If only one image exists, duplicate it for gallery effect
-    if (images.length === 1 && product.image_url) {
+    if (images.length === 1 && product.imageUrl) {
       for (let i = 0; i < 5; i++) {
-        images.push(product.image_url);
+        images.push(product.imageUrl);
       }
     }
     
@@ -864,28 +875,28 @@ export const couriersAPI = new CouriersAPI();
 
 export interface ProductionBatch {
   id: string;
-  batch_name: string;
-  batch_date: string;
-  design_codes: string;
+  batchName: string;
+  batchDate: string;
+  designCodes: string;
   status: "planning" | "in_production" | "completed";
-  fabric_cost: number;
-  garments_bill: number;
-  print_bill: number;
-  accessories_bill: number;
-  transport_cost: number;
-  packaging_cost: number;
-  other_costs: number;
-  qty_small: number;
-  qty_medium: number;
-  qty_large: number;
-  qty_xl: number;
-  sell_price_small: number;
-  sell_price_medium: number;
-  sell_price_large: number;
-  sell_price_xl: number;
+  fabricCost: number;
+  garmentsBill: number;
+  printBill: number;
+  accessoriesBill: number;
+  transportCost: number;
+  packagingCost: number;
+  otherCosts: number;
+  qtySmall: number;
+  qtyMedium: number;
+  qtyLarge: number;
+  qtyXl: number;
+  sellPriceSmall: number;
+  sellPriceMedium: number;
+  sellPriceLarge: number;
+  sellPriceXl: number;
   notes: string;
-  created_at?: string;
-  updated_at?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 class ProductionBatchesAPI {
@@ -915,11 +926,11 @@ class ProductionBatchesAPI {
   }
 
   sumCosts(b: ProductionBatch): number {
-    return (b.fabric_cost||0)+(b.garments_bill||0)+(b.print_bill||0)+(b.accessories_bill||0)+(b.transport_cost||0)+(b.packaging_cost||0)+(b.other_costs||0);
+    return (b.fabricCost||0)+(b.garmentsBill||0)+(b.printBill||0)+(b.accessoriesBill||0)+(b.transportCost||0)+(b.packagingCost||0)+(b.otherCosts||0);
   }
 
   calcRevenue(b: ProductionBatch): number {
-    return (b.qty_small||0)*(b.sell_price_small||990)+(b.qty_medium||0)*(b.sell_price_medium||1190)+(b.qty_large||0)*(b.sell_price_large||1490)+(b.qty_xl||0)*(b.sell_price_xl||1690);
+    return (b.qtySmall||0)*(b.sellPriceSmall||990)+(b.qtyMedium||0)*(b.sellPriceMedium||1190)+(b.qtyLarge||0)*(b.sellPriceLarge||1490)+(b.qtyXl||0)*(b.sellPriceXl||1690);
   }
 
   invalidate(): void { this.cache = null; }
@@ -933,21 +944,21 @@ export const productionBatchesAPI = new ProductionBatchesAPI();
 
 export interface FBCampaign {
   id: string;
-  campaign_name: string;
+  campaignName: string;
   month: string;
   status: "active" | "completed" | "paused" | "cancelled";
-  usd_spent: number;
-  exchange_rate: number;
-  bdt_spent: number;
-  predicted_orders: number;
-  actual_orders: number;
-  avg_order_value: number;
-  unit_production_cost: number;
-  delivery_cost_per_order: number;
-  other_costs_bdt: number;
+  usdSpent: number;
+  exchangeRate: number;
+  bdtSpent: number;
+  predictedOrders: number;
+  actualOrders: number;
+  avgOrderValue: number;
+  unitProductionCost: number;
+  deliveryCostPerOrder: number;
+  otherCostsBdt: number;
   notes: string;
-  created_at?: string;
-  updated_at?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 class FBCampaignsAPI {
@@ -990,16 +1001,16 @@ export interface ContentBudgetEntry {
   title: string;
   category: "video" | "photo" | "graphic" | "copywriting" | "model" | "other";
   month: string;
-  vendor_name: string;
+  vendorName: string;
   platform: "facebook" | "instagram" | "youtube" | "website" | "all";
-  amount_bdt: number | null;
-  amount_usd: number | null;
-  exchange_rate: number;
-  effective_bdt: number;
+  amountBdt: number | null;
+  amountUsd: number | null;
+  exchangeRate: number;
+  effectiveBdt: number;
   status: "paid" | "pending" | "cancelled";
   notes: string;
-  created_at?: string;
-  updated_at?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 class ContentBudgetAPI {

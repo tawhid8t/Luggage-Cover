@@ -91,7 +91,7 @@ function formatDate(ts?: string): string {
 }
 
 function getOrderDate(order: Order): string {
-  return (order as any).createdAt || (order as any).created_at || "—";
+  return (order as any).createdAt || (order as any).createdAt || "—";
 }
 
 function formatDatetime(ts?: string): string {
@@ -176,9 +176,9 @@ export default function OrdersPage() {
       const ordersData = Array.isArray(data) ? data : [];
       ordersData.sort((a: Order, b: Order) => {
         const aTime = (a as any).createdAt ? new Date((a as any).createdAt).getTime() : 
-                     (a as any).created_at ? new Date((a as any).created_at).getTime() : 0;
+                     (a as any).createdAt ? new Date((a as any).createdAt).getTime() : 0;
         const bTime = (b as any).createdAt ? new Date((b as any).createdAt).getTime() : 
-                     (b as any).created_at ? new Date((b as any).created_at).getTime() : 0;
+                     (b as any).createdAt ? new Date((b as any).createdAt).getTime() : 0;
         return bTime - aTime;
       });
       setOrders(ordersData as Order[]);

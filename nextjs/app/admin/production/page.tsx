@@ -4,13 +4,13 @@ import AdminLayout from "@/components/admin/admin-layout";
 import { productionBatchesAPI, type ProductionBatch } from "@/lib/api";
 
 function sumCosts(b: ProductionBatch) {
-  return (b.fabric_cost||0)+(b.garments_bill||0)+(b.print_bill||0)+(b.accessories_bill||0)+(b.transport_cost||0)+(b.packaging_cost||0)+(b.other_costs||0);
+  return (b.fabricCost||0)+(b.garmentsBill||0)+(b.printBill||0)+(b.accessoriesBill||0)+(b.transportCost||0)+(b.packagingCost||0)+(b.otherCosts||0);
 }
 function calcRevenue(b: ProductionBatch) {
-  return (b.qty_small||0)*(b.sell_price_small||990)+(b.qty_medium||0)*(b.sell_price_medium||1190)+(b.qty_large||0)*(b.sell_price_large||1490)+(b.qty_xl||0)*(b.sell_price_xl||1690);
+  return (b.qtySmall||0)*(b.sellPriceSmall||990)+(b.qtyMedium||0)*(b.sellPriceMedium||1190)+(b.qtyLarge||0)*(b.sellPriceLarge||1490)+(b.qtyXl||0)*(b.sellPriceXl||1690);
 }
 function totalQty(b: ProductionBatch) {
-  return (b.qty_small||0)+(b.qty_medium||0)+(b.qty_large||0)+(b.qty_xl||0);
+  return (b.qtySmall||0)+(b.qtyMedium||0)+(b.qtyLarge||0)+(b.qtyXl||0);
 }
 
 function formatCurrency(n: number) {
@@ -59,7 +59,7 @@ export default function ProductionPage() {
     setLoading(true);
     try {
       const data = await productionBatchesAPI.getAll(true);
-      data.sort((a, b) => ((b.created_at || "") > (a.created_at || "") ? 1 : -1));
+      data.sort((a, b) => ((b.createdAt || "") > (a.createdAt || "") ? 1 : -1));
       setBatches(data);
     } catch (e) {
       console.error(e);
@@ -93,47 +93,47 @@ export default function ProductionPage() {
     
     // Manual extraction to debug
     const form = e.currentTarget;
-    const batch_name = (form.elements.namedItem("batch_name") as HTMLInputElement)?.value || "Default Batch";
-    const batch_date = (form.elements.namedItem("batch_date") as HTMLInputElement)?.value || new Date().toISOString().slice(0,10);
-    const design_codes = (form.elements.namedItem("design_codes") as HTMLInputElement)?.value || "";
+    const batchName = (form.elements.namedItem("batchName") as HTMLInputElement)?.value || "Default Batch";
+    const batchDate = (form.elements.namedItem("batchDate") as HTMLInputElement)?.value || new Date().toISOString().slice(0,10);
+    const designCodes = (form.elements.namedItem("designCodes") as HTMLInputElement)?.value || "";
     const status = (form.elements.namedItem("status") as HTMLSelectElement)?.value || "planning";
-    const fabric_cost = parseFloat((form.elements.namedItem("fabric_cost") as HTMLInputElement)?.value) || 0;
-    const garments_bill = parseFloat((form.elements.namedItem("garments_bill") as HTMLInputElement)?.value) || 0;
-    const print_bill = parseFloat((form.elements.namedItem("print_bill") as HTMLInputElement)?.value) || 0;
-    const accessories_bill = parseFloat((form.elements.namedItem("accessories_bill") as HTMLInputElement)?.value) || 0;
-    const transport_cost = parseFloat((form.elements.namedItem("transport_cost") as HTMLInputElement)?.value) || 0;
-    const packaging_cost = parseFloat((form.elements.namedItem("packaging_cost") as HTMLInputElement)?.value) || 0;
-    const other_costs = parseFloat((form.elements.namedItem("other_costs") as HTMLInputElement)?.value) || 0;
-    const qty_small = parseFloat((form.elements.namedItem("qty_small") as HTMLInputElement)?.value) || 0;
-    const qty_medium = parseFloat((form.elements.namedItem("qty_medium") as HTMLInputElement)?.value) || 0;
-    const qty_large = parseFloat((form.elements.namedItem("qty_large") as HTMLInputElement)?.value) || 0;
-    const qty_xl = parseFloat((form.elements.namedItem("qty_xl") as HTMLInputElement)?.value) || 0;
-    const sell_price_small = parseFloat((form.elements.namedItem("sell_price_small") as HTMLInputElement)?.value) || 990;
-    const sell_price_medium = parseFloat((form.elements.namedItem("sell_price_medium") as HTMLInputElement)?.value) || 1190;
-    const sell_price_large = parseFloat((form.elements.namedItem("sell_price_large") as HTMLInputElement)?.value) || 1490;
-    const sell_price_xl = parseFloat((form.elements.namedItem("sell_price_xl") as HTMLInputElement)?.value) || 1690;
+    const fabricCost = parseFloat((form.elements.namedItem("fabricCost") as HTMLInputElement)?.value) || 0;
+    const garmentsBill = parseFloat((form.elements.namedItem("garmentsBill") as HTMLInputElement)?.value) || 0;
+    const printBill = parseFloat((form.elements.namedItem("printBill") as HTMLInputElement)?.value) || 0;
+    const accessoriesBill = parseFloat((form.elements.namedItem("accessoriesBill") as HTMLInputElement)?.value) || 0;
+    const transportCost = parseFloat((form.elements.namedItem("transportCost") as HTMLInputElement)?.value) || 0;
+    const packagingCost = parseFloat((form.elements.namedItem("packagingCost") as HTMLInputElement)?.value) || 0;
+    const otherCosts = parseFloat((form.elements.namedItem("otherCosts") as HTMLInputElement)?.value) || 0;
+    const qtySmall = parseFloat((form.elements.namedItem("qtySmall") as HTMLInputElement)?.value) || 0;
+    const qtyMedium = parseFloat((form.elements.namedItem("qtyMedium") as HTMLInputElement)?.value) || 0;
+    const qtyLarge = parseFloat((form.elements.namedItem("qtyLarge") as HTMLInputElement)?.value) || 0;
+    const qtyXl = parseFloat((form.elements.namedItem("qtyXl") as HTMLInputElement)?.value) || 0;
+    const sellPriceSmall = parseFloat((form.elements.namedItem("sellPriceSmall") as HTMLInputElement)?.value) || 990;
+    const sellPriceMedium = parseFloat((form.elements.namedItem("sellPriceMedium") as HTMLInputElement)?.value) || 1190;
+    const sellPriceLarge = parseFloat((form.elements.namedItem("sellPriceLarge") as HTMLInputElement)?.value) || 1490;
+    const sellPriceXl = parseFloat((form.elements.namedItem("sellPriceXl") as HTMLInputElement)?.value) || 1690;
     const notes = (form.elements.namedItem("notes") as HTMLTextAreaElement)?.value || "";
     
     const data = {
-      batch_name: batch_name,
-      batch_date: batch_date,
-      design_codes: design_codes,
+      batchName: batchName,
+      batchDate: batchDate,
+      designCodes: designCodes,
       status: status,
-      fabric_cost: fabric_cost,
-      garments_bill: garments_bill,
-      print_bill: print_bill,
-      accessories_bill: accessories_bill,
-      transport_cost: transport_cost,
-      packaging_cost: packaging_cost,
-      other_costs: other_costs,
-      qty_small: qty_small,
-      qty_medium: qty_medium,
-      qty_large: qty_large,
-      qty_xl: qty_xl,
-      sell_price_small: sell_price_small,
-      sell_price_medium: sell_price_medium,
-      sell_price_large: sell_price_large,
-      sell_price_xl: sell_price_xl,
+      fabricCost: fabricCost,
+      garmentsBill: garmentsBill,
+      printBill: printBill,
+      accessoriesBill: accessoriesBill,
+      transportCost: transportCost,
+      packagingCost: packagingCost,
+      otherCosts: otherCosts,
+      qtySmall: qtySmall,
+      qtyMedium: qtyMedium,
+      qtyLarge: qtyLarge,
+      qtyXl: qtyXl,
+      sellPriceSmall: sellPriceSmall,
+      sellPriceMedium: sellPriceMedium,
+      sellPriceLarge: sellPriceLarge,
+      sellPriceXl: sellPriceXl,
       notes: notes,
     };
     setSaving(true);
@@ -172,9 +172,9 @@ export default function ProductionPage() {
     try {
       const d = { ...b };
       delete (d as Partial<ProductionBatch>).id;
-      d.batch_name = (d.batch_name || "Batch") + " (Copy)";
+      d.batchName = (d.batchName || "Batch") + " (Copy)";
       d.status = "planning";
-      d.batch_date = new Date().toISOString();
+      d.batchDate = new Date().toISOString();
       await productionBatchesAPI.create(d as Record<string, unknown>);
       showToast("success", "Batch duplicated!");
       await loadBatches();
@@ -297,13 +297,13 @@ export default function ProductionPage() {
               const profit = rev - tc;
               const margin = rev > 0 ? ((profit / rev) * 100).toFixed(1) : "0";
               const statusColors: Record<string, string> = { planning: "#f39c12", in_production: "#3498db", completed: "#27ae60" };
-              const bDate = b.batch_date ? new Date(b.batch_date).toLocaleDateString("en-BD", { year: "numeric", month: "short", day: "numeric" }) : "—";
+              const bDate = b.batchDate ? new Date(b.batchDate).toLocaleDateString("en-BD", { year: "numeric", month: "short", day: "numeric" }) : "—";
               const isOpen = expandedBatch === b.id;
               const sizes = [
-                { label: "S", qty: b.qty_small || 0, price: b.sell_price_small || 990 },
-                { label: "M", qty: b.qty_medium || 0, price: b.sell_price_medium || 1190 },
-                { label: "L", qty: b.qty_large || 0, price: b.sell_price_large || 1490 },
-                { label: "XL", qty: b.qty_xl || 0, price: b.sell_price_xl || 1690 },
+                { label: "S", qty: b.qtySmall || 0, price: b.sellPriceSmall || 990 },
+                { label: "M", qty: b.qtyMedium || 0, price: b.sellPriceMedium || 1190 },
+                { label: "L", qty: b.qtyLarge || 0, price: b.sellPriceLarge || 1490 },
+                { label: "XL", qty: b.qtyXl || 0, price: b.sellPriceXl || 1690 },
               ].filter(s => s.qty > 0);
 
               return (
@@ -312,13 +312,13 @@ export default function ProductionPage() {
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, color: "var(--brand-navy)" }}>
                         <i className="fas fa-layer-group" style={{ color: "var(--brand-blue)" }}></i>
-                        {b.batch_name}
+                        {b.batchName}
                         <span style={{ fontSize: "0.72rem", fontWeight: 600, color: statusColors[b.status] || "#9fa8c7", background: `${statusColors[b.status] || "#9fa8c7"}22`, padding: "2px 8px", borderRadius: 20, textTransform: "uppercase" }}>
                           {b.status?.replace("_", " ")}
                         </span>
                       </div>
                       <div style={{ fontSize: "0.85rem", color: "var(--admin-muted)", marginTop: 4 }}>
-                        📅 {bDate} {b.design_codes ? ` · 🎨 ${b.design_codes}` : ""}
+                        📅 {bDate} {b.designCodes ? ` · 🎨 ${b.designCodes}` : ""}
                       </div>
                     </div>
                     <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
@@ -349,13 +349,13 @@ export default function ProductionPage() {
                         <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--brand-navy)", marginBottom: 12, textTransform: "uppercase" }}>💸 Expense Breakdown</div>
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
                           {[
-                            { label: "🧵 Fabric", val: b.fabric_cost || 0 },
-                            { label: "🪡 Garments", val: b.garments_bill || 0 },
-                            { label: "🖨️ Print", val: b.print_bill || 0 },
-                            { label: "🔩 Accessories", val: b.accessories_bill || 0 },
-                            { label: "🚛 Transport", val: b.transport_cost || 0 },
-                            { label: "📦 Packaging", val: b.packaging_cost || 0 },
-                            { label: "➕ Other", val: b.other_costs || 0 },
+                            { label: "🧵 Fabric", val: b.fabricCost || 0 },
+                            { label: "🪡 Garments", val: b.garmentsBill || 0 },
+                            { label: "🖨️ Print", val: b.printBill || 0 },
+                            { label: "🔩 Accessories", val: b.accessoriesBill || 0 },
+                            { label: "🚛 Transport", val: b.transportCost || 0 },
+                            { label: "📦 Packaging", val: b.packagingCost || 0 },
+                            { label: "➕ Other", val: b.otherCosts || 0 },
                             { label: "💰 Total", val: tc, highlight: true },
                           ].map((item) => (
                             <div key={item.label} style={{ background: item.highlight ? "#f0f4ff" : "#fff", padding: "10px 12px", borderRadius: 8, border: `1px solid ${item.highlight ? "#4A90E2" : "#e1e5f5"}` }}>
@@ -507,7 +507,7 @@ export default function ProductionPage() {
             <div className="admin-modal admin-modal-lg" onClick={(e) => e.stopPropagation()}>
               <div className="admin-modal-header">
                 <div className="admin-modal-title">
-                  {editBatch ? <><i className="fas fa-edit"></i> Edit: {editBatch.batch_name}</> : <><i className="fas fa-plus"></i> New Production Batch</>}
+                  {editBatch ? <><i className="fas fa-edit"></i> Edit: {editBatch.batchName}</> : <><i className="fas fa-plus"></i> New Production Batch</>}
                 </div>
                 <button className="admin-modal-close" onClick={() => setShowModal(false)}>
                   <i className="fas fa-times"></i>
@@ -518,15 +518,15 @@ export default function ProductionPage() {
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
                     <div className="admin-form-group">
                       <label className="admin-form-label">Batch Name *</label>
-                      <input type="text" name="batch_name" className="admin-input" required defaultValue={editBatch?.batch_name || ""} placeholder="e.g. Batch-003 Summer" />
+                      <input type="text" name="batchName" className="admin-input" required defaultValue={editBatch?.batchName || ""} placeholder="e.g. Batch-003 Summer" />
                     </div>
                     <div className="admin-form-group">
                       <label className="admin-form-label">Date</label>
-                      <input type="date" name="batch_date" className="admin-input" defaultValue={editBatch?.batch_date ? editBatch.batch_date.slice(0, 10) : new Date().toISOString().slice(0, 10)} />
+                      <input type="date" name="batchDate" className="admin-input" defaultValue={editBatch?.batchDate ? editBatch.batchDate.slice(0, 10) : new Date().toISOString().slice(0, 10)} />
                     </div>
                     <div className="admin-form-group">
                       <label className="admin-form-label">Design Codes</label>
-                      <input type="text" name="design_codes" className="admin-input" defaultValue={editBatch?.design_codes || ""} placeholder="A1, B2" />
+                      <input type="text" name="designCodes" className="admin-input" defaultValue={editBatch?.designCodes || ""} placeholder="A1, B2" />
                     </div>
                     <div className="admin-form-group">
                       <label className="admin-form-label">Status</label>
@@ -541,13 +541,13 @@ export default function ProductionPage() {
                   <div style={{ fontWeight: 700, fontSize: "0.85rem", marginBottom: 8 }}>💸 Expenses</div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
                     {[
-                      ["fabric_cost", "Fabric (৳)", editBatch?.fabric_cost],
-                      ["garments_bill", "Garments (৳)", editBatch?.garments_bill],
-                      ["print_bill", "Print Bill (৳)", editBatch?.print_bill],
-                      ["accessories_bill", "Accessories (৳)", editBatch?.accessories_bill],
-                      ["transport_cost", "Transport (৳)", editBatch?.transport_cost],
-                      ["packaging_cost", "Packaging (৳)", editBatch?.packaging_cost],
-                      ["other_costs", "Other (৳)", editBatch?.other_costs],
+                      ["fabricCost", "Fabric (৳)", editBatch?.fabricCost],
+                      ["garmentsBill", "Garments (৳)", editBatch?.garmentsBill],
+                      ["printBill", "Print Bill (৳)", editBatch?.printBill],
+                      ["accessoriesBill", "Accessories (৳)", editBatch?.accessoriesBill],
+                      ["transportCost", "Transport (৳)", editBatch?.transportCost],
+                      ["packagingCost", "Packaging (৳)", editBatch?.packagingCost],
+                      ["otherCosts", "Other (৳)", editBatch?.otherCosts],
                     ].map(([n, l, v]) => (
                       <div key={n as string} className="admin-form-group" style={{ marginBottom: 0 }}>
                         <label className="admin-form-label">{l as string}</label>
@@ -559,12 +559,12 @@ export default function ProductionPage() {
                   <div style={{ fontWeight: 700, fontSize: "0.85rem", marginBottom: 8 }}>📦 Units & Prices</div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
                     {[
-                      ["qty_small","S Qty",editBatch?.qty_small],["qty_medium","M Qty",editBatch?.qty_medium],
-                      ["qty_large","L Qty",editBatch?.qty_large],["qty_xl","XL Qty",editBatch?.qty_xl],
-                      ["sell_price_small","S Price",editBatch?.sell_price_small||990],
-                      ["sell_price_medium","M Price",editBatch?.sell_price_medium||1190],
-                      ["sell_price_large","L Price",editBatch?.sell_price_large||1490],
-                      ["sell_price_xl","XL Price",editBatch?.sell_price_xl||1690],
+                      ["qtySmall","S Qty",editBatch?.qtySmall],["qtyMedium","M Qty",editBatch?.qtyMedium],
+                      ["qtyLarge","L Qty",editBatch?.qtyLarge],["qtyXl","XL Qty",editBatch?.qtyXl],
+                      ["sellPriceSmall","S Price",editBatch?.sellPriceSmall||990],
+                      ["sellPriceMedium","M Price",editBatch?.sellPriceMedium||1190],
+                      ["sellPriceLarge","L Price",editBatch?.sellPriceLarge||1490],
+                      ["sellPriceXl","XL Price",editBatch?.sellPriceXl||1690],
                     ].map(([n, l, v]) => (
                       <div key={n as string} className="admin-form-group" style={{ marginBottom: 0 }}>
                         <label className="admin-form-label">{l as string}</label>

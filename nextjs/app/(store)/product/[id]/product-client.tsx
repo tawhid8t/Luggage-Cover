@@ -20,15 +20,15 @@ interface ProductClientProps {
 }
 
 const PRICE_MAP: Record<ProductSize, keyof Product> = {
-  small: "price_small",
-  medium: "price_medium",
-  large: "price_large",
+  small: "priceSmall",
+  medium: "priceMedium",
+  large: "priceLarge",
 };
 
 const STOCK_MAP: Record<ProductSize, keyof Product> = {
-  small: "stock_small",
-  medium: "stock_medium",
-  large: "stock_large",
+  small: "stockSmall",
+  medium: "stockMedium",
+  large: "stockLarge",
 };
 
 export function ProductClient({ product, related, howtoSteps }: ProductClientProps) {

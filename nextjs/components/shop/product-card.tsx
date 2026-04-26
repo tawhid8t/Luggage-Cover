@@ -18,9 +18,9 @@ export function ProductCard({ product, priority }: ProductCardProps) {
       <article className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_16px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_40px_rgba(74,144,226,0.2)] transition-all duration-300 hover:-translate-y-1.5">
         {/* Image */}
         <div className="relative aspect-[4/3] bg-gradient-to-br from-[#f0f3ff] to-[#e8ecfc] overflow-hidden">
-          {product.image_url ? (
+          {product.imageUrl ? (
             <Image
-              src={product.image_url}
+              src={product.imageUrl}
               alt={product.name}
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -69,7 +69,7 @@ export function ProductCard({ product, priority }: ProductCardProps) {
           </h3>
           <div className="flex items-baseline gap-1 mb-1">
             <span className="text-[1.1rem] font-extrabold text-brand-blue">
-              ৳ {product.price_small.toLocaleString()}
+              ৳ {product.priceSmall.toLocaleString()}
             </span>
             <span className="text-xs text-[#9fa8c7] font-medium">
               / cover

@@ -30,7 +30,7 @@ export default function CustomersPage() {
     setLoading(true);
     try {
       const [c, o] = await Promise.all([customersAPI.getAll(), ordersAPI.getAll()]);
-      c.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+      c.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
       setCustomers(c);
       setOrders(o);
     } catch (e) {
@@ -51,8 +51,8 @@ export default function CustomersPage() {
   });
 
   const getCustomerStats = (customerId: string) => {
-    const custOrders = orders.filter((o) => o.customer_phone === customers.find((c) => c.id === customerId)?.phone);
-    const totalSpent = custOrders.reduce((s, o) => s + (o.total_amount || 0), 0);
+    const custOrders = orders.filter((o) => o.customerPhone === customers.find((c) => c.id === customerId)?.phone);
+    const totalSpent = custOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
     return { orderCount: custOrders.length, totalSpent };
   };
 
@@ -73,7 +73,7 @@ export default function CustomersPage() {
                   <p><strong>{selectedCustomer.name || "—"}</strong></p>
                   <p>{selectedCustomer.phone}</p>
                   <p>{selectedCustomer.email}</p>
-                  <p>Since: {formatDate(selectedCustomer.created_at)}</p>
+                  <p>Since: {formatDate(selectedCustomer.createdAt)}</p>
                 </div>
                 <div>
                   <h4 style={{ marginBottom: 8, fontSize: ".8rem", color: "var(--admin-muted)", textTransform: "uppercase", fontWeight: 700 }}>Stats</h4>
@@ -93,14 +93,14 @@ export default function CustomersPage() {
                 <thead><tr><th>Order #</th><th>Date</th><th>Total</th><th>Status</th></tr></thead>
                 <tbody>
                   {orders
-                    .filter((o) => o.customer_phone === selectedCustomer.phone)
-                    .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+                    .filter((o) => o.customerPhone === selectedCustomer.phone)
+                    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
                     .map((o) => (
                       <tr key={o.id}>
-                        <td className="cell-bold">{o.order_number || o.id?.slice(0, 8)}</td>
-                        <td>{formatDate(o.created_at)}</td>
-                        <td className="cell-bold">{formatPrice(o.total_amount || 0)}</td>
-                        <td><span className={`status-badge status-${o.order_status}`}>{o.order_status}</span></td>
+                        <td className="cell-bold">{o.orderNumber || o.id?.slice(0, 8)}</td>
+                        <td>{formatDate(o.createdAt)}</td>
+                        <td className="cell-bold">{formatPrice(o.totalAmount || 0)}</td>
+                        <td><span className={`status-badge status-${o.orderStatus}`}>{o.orderStatus}</span></td>
                       </tr>
                     ))}
                 </tbody>
@@ -159,7 +159,7 @@ export default function CustomersPage() {
                         <td>{c.email || "—"}</td>
                         <td>{stats.orderCount}</td>
                         <td className="cell-bold">{formatPrice(stats.totalSpent)}</td>
-                        <td>{formatDate(c.created_at)}</td>
+                        <td>{formatDate(c.createdAt)}</td>
                         <td>
                           <button
                             className="admin-btn admin-btn-outline admin-btn-sm"

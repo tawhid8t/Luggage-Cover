@@ -11,30 +11,30 @@ export interface Product {
   description?: string;
   status: "active" | "inactive";
   featured: boolean;
-  sort_order?: number;
+  sortOrder?: number;
   // Pricing
-  price_small: number;
-  price_medium: number;
-  price_large: number;
+  priceSmall: number;
+  priceMedium: number;
+  priceLarge: number;
   // Stock
-  stock_small: number;
-  stock_medium: number;
-  stock_large: number;
+  stockSmall: number;
+  stockMedium: number;
+  stockLarge: number;
   // Images
-  image_url?: string;
-  gallery_1?: string;
-  gallery_2?: string;
-  gallery_3?: string;
-  gallery_4?: string;
-  gallery_5?: string;
+  imageUrl?: string;
+  gallery1?: string;
+  gallery2?: string;
+  gallery3?: string;
+  gallery4?: string;
+  gallery5?: string;
   // SEO
-  meta_title?: string;
-  meta_description?: string;
-  seo_title?: string;
-  seo_description?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  seoTitle?: string;
+  seoDescription?: string;
   // Timestamps
-  created_at?: string;
-  updated_at?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CartItem {
@@ -50,9 +50,9 @@ export interface CartItem {
 }
 
 export interface OrderItem {
-  product_id: string;
-  product_name: string;
-  product_code: string;
+  productId: string;
+  productName: string;
+  productCode: string;
   size: ProductSize;
   price: number;
   quantity?: number;
@@ -62,26 +62,26 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
-  order_number: string;
-  order_status: OrderStatus;
-  payment_method: PaymentMethod;
-  payment_status: "pending" | "paid" | "failed" | "refunded";
-  customer_name: string;
-  customer_phone: string;
-  customer_email?: string;
-  shipping_address?: string;
+  orderNumber: string;
+  orderStatus: OrderStatus;
+  paymentMethod: PaymentMethod;
+  paymentStatus: "pending" | "paid" | "failed" | "refunded";
+  customerName: string;
+  customerPhone: string;
+  customerEmail?: string;
+  shippingAddress?: string;
   district: string;
   items: OrderItem[];
   subtotal: number;
-  discount_amount?: number;
-  delivery_charge: number;
-  total_amount: number;
-  courier_name?: string;
-  tracking_number?: string;
-  order_notes?: string;
-  status_history?: StatusHistoryEntry[];
-  created_at?: string;
-  updated_at?: string;
+  discountAmount?: number;
+  deliveryCharge: number;
+  totalAmount: number;
+  courierName?: string;
+  trackingNumber?: string;
+  orderNotes?: string;
+  statusHistory?: StatusHistoryEntry[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export type OrderStatus =
@@ -111,10 +111,10 @@ export interface Customer {
   email?: string;
   address?: string;
   district?: string;
-  total_orders: number;
-  total_spent: number;
-  created_at?: string;
-  last_order_at?: string;
+  totalOrders: number;
+  totalSpent: number;
+  createdAt?: string;
+  lastOrderAt?: string;
 }
 
 export interface Setting {

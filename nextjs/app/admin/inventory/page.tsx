@@ -7,22 +7,22 @@ interface Product {
   name: string;
   code: string;
   status: string;
-  stock_small: number;
-  stock_medium: number;
-  stock_large: number;
+  stockSmall: number;
+  stockMedium: number;
+  stockLarge: number;
 }
 
 interface InventoryLog {
   id: string;
-  product_id: string;
-  product_name: string;
-  product_code: string;
+  productId: string;
+  productName: string;
+  productCode: string;
   size: string;
-  transaction_type: string;
+  transactionType: string;
   quantity: number;
   notes: string;
   reference: string;
-  created_at: string;
+  createdAt: string;
 }
 
 const TX_TYPES = ["restock", "sale", "adjustment", "damaged", "return"];
@@ -55,7 +55,7 @@ export default function InventoryPage() {
         apiGet<InventoryLog[]>("tables/lc_inventory"),
       ]);
       productsData.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-      logsData.sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
+      logsData.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
       setProducts(productsData);
       setLogs(logsData);
     } catch (e) {
@@ -75,19 +75,19 @@ export default function InventoryPage() {
       const product = products.find((p) => p.id === restockForm.productId);
       
       await apiPatch("tables/lc_products", restockForm.productId, {
-        stock_small: restockForm.small,
-        stock_medium: restockForm.medium,
-        stock_large: restockForm.large,
+        stockSmall: restockForm.small,
+        stockMedium: restockForm.medium,
+        stockLarge: restockForm.large,
       });
 
       for (const [size, qty] of [["small", restockForm.small], ["medium", restockForm.medium], ["large", restockForm.large]] as [string, number][]) {
         if (qty > 0) {
           await apiPost("tables/lc_inventory", {
-            product_id: restockForm.productId,
-            product_name: product?.name,
-            product_code: product?.code,
+            productId: restockForm.productId,
+            productName: product?.name,
+            productCode: product?.code,
             size,
-            transaction_type: "restock",
+            transactionType: "restock",
             quantity: qty,
             notes: restockForm.notes,
           });
@@ -127,11 +127,11 @@ export default function InventoryPage() {
       });
 
       await apiPost("tables/lc_inventory", {
-        product_id: adjustForm.productId,
-        product_name: product?.name,
-        product_code: product?.code,
+        productId: adjustForm.productId,
+        productName: product?.name,
+        productCode: product?.code,
         size: adjustForm.size,
-        transaction_type: adjustForm.type,
+        transactionType: adjustForm.type,
         quantity: adjustForm.type === "damaged" ? -adjustForm.qty : adjustForm.qty,
         notes: adjustForm.notes,
       });
@@ -170,22 +170,22 @@ export default function InventoryPage() {
                     <tr><td colSpan={6} className="text-center p-8">No products found</td></tr>
                   ) : (
                     activeProducts.map((p) => {
-                      const total = Number(p.stock_small || 0) + Number(p.stock_medium || 0) + Number(p.stock_large || 0);
+                      const total = Number(p.stockSmall || 0) + Number(p.stockMedium || 0) + Number(p.stockLarge || 0);
                       return (
                         <tr key={p.id}>
                           <td className="cell-bold">{p.name}</td>
                           <td className="cell-code">{p.code}</td>
                           <td>
-                            <span className={Number(p.stock_small || 0) < 5 ? "text-danger font-bold" : ""}>{p.stock_small || 0}</span>
-                            {Number(p.stock_small || 0) < 5 && <span className="status-badge status-cancelled" style={{ marginLeft: 4 }}>Low</span>}
+                            <span className={Number(p.stockSmall || 0) < 5 ? "text-danger font-bold" : ""}>{p.stockSmall || 0}</span>
+                            {Number(p.stockSmall || 0) < 5 && <span className="status-badge status-cancelled" style={{ marginLeft: 4 }}>Low</span>}
                           </td>
                           <td>
-                            <span className={Number(p.stock_medium || 0) < 5 ? "text-danger font-bold" : ""}>{p.stock_medium || 0}</span>
-                            {Number(p.stock_medium || 0) < 5 && <span className="status-badge status-cancelled" style={{ marginLeft: 4 }}>Low</span>}
+                            <span className={Number(p.stockMedium || 0) < 5 ? "text-danger font-bold" : ""}>{p.stockMedium || 0}</span>
+                            {Number(p.stockMedium || 0) < 5 && <span className="status-badge status-cancelled" style={{ marginLeft: 4 }}>Low</span>}
                           </td>
                           <td>
-                            <span className={Number(p.stock_large || 0) < 5 ? "text-danger font-bold" : ""}>{p.stock_large || 0}</span>
-                            {Number(p.stock_large || 0) < 5 && <span className="status-badge status-cancelled" style={{ marginLeft: 4 }}>Low</span>}
+                            <span className={Number(p.stockLarge || 0) < 5 ? "text-danger font-bold" : ""}>{p.stockLarge || 0}</span>
+                            {Number(p.stockLarge || 0) < 5 && <span className="status-badge status-cancelled" style={{ marginLeft: 4 }}>Low</span>}
                           </td>
                           <td className="cell-bold">{total}</td>
                         </tr>
@@ -296,13 +296,13 @@ export default function InventoryPage() {
                 ) : (
                   logs.slice(0, 50).map((t) => (
                     <tr key={t.id}>
-                      <td>{formatDate(t.created_at)}</td>
-                      <td className="cell-bold">{t.product_name || "—"}</td>
-                      <td className="cell-code">{t.product_code || "—"}</td>
+                      <td>{formatDate(t.createdAt)}</td>
+                      <td className="cell-bold">{t.productName || "—"}</td>
+                      <td className="cell-code">{t.productCode || "—"}</td>
                       <td style={{ textTransform: "capitalize" }}>{t.size || "—"}</td>
                       <td>
-                        <span className={`status-badge status-${t.transaction_type === "restock" || t.transaction_type === "return" ? "active" : "inactive"}`}>
-                          {t.transaction_type}
+                        <span className={`status-badge status-${t.transactionType === "restock" || t.transactionType === "return" ? "active" : "inactive"}`}>
+                          {t.transactionType}
                         </span>
                       </td>
                       <td className={(t.quantity || 0) > 0 ? "text-success font-bold" : "text-danger font-bold"}>

@@ -9,16 +9,16 @@ interface SizeSelectorProps {
   onSelect: (size: ProductSize) => void;
 }
 
-const PRICE_MAP: Record<ProductSize, "price_small" | "price_medium" | "price_large"> = {
-  small: "price_small",
-  medium: "price_medium",
-  large: "price_large",
+const PRICE_MAP: Record<ProductSize, "priceSmall" | "priceMedium" | "priceLarge"> = {
+  small: "priceSmall",
+  medium: "priceMedium",
+  large: "priceLarge",
 };
 
-const STOCK_MAP: Record<ProductSize, "stock_small" | "stock_medium" | "stock_large"> = {
-  small: "stock_small",
-  medium: "stock_medium",
-  large: "stock_large",
+const STOCK_MAP: Record<ProductSize, "stockSmall" | "stockMedium" | "stockLarge"> = {
+  small: "stockSmall",
+  medium: "stockMedium",
+  large: "stockLarge",
 };
 
 export function SizeSelector({ product, selected, onSelect }: SizeSelectorProps) {

@@ -49,10 +49,10 @@ export function ShopClient({ initialProducts }: ShopClientProps) {
         result.sort((a, b) => b.name.localeCompare(a.name));
         break;
       case "price_asc":
-        result.sort((a, b) => a.price_small - b.price_small);
+        result.sort((a, b) => a.priceSmall - b.priceSmall);
         break;
       case "price_desc":
-        result.sort((a, b) => b.price_small - a.price_small);
+        result.sort((a, b) => b.priceSmall - a.priceSmall);
         break;
     }
 

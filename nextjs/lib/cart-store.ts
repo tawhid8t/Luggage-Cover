@@ -26,11 +26,11 @@ const getItemKey = (productId: string, size: ProductSize) =>
 
 const getPriceForSize = (product: Product, size: ProductSize): number => {
   const priceMap: Record<ProductSize, keyof Product> = {
-    small: "price_small",
-    medium: "price_medium",
-    large: "price_large",
+    small: "priceSmall",
+    medium: "priceMedium",
+    large: "priceLarge",
   };
-  return (product[priceMap[size]] as number) || product.price_small || 990;
+  return (product[priceMap[size]] as number) || product.priceSmall || 990;
 };
 
 const EMOJI_MAP: Record<string, string> = {
@@ -74,7 +74,7 @@ export const useCartStore = create<CartStore>()(
             productName: product.name,
             productCode: product.code,
             emoji: EMOJI_MAP[product.code] || "🧳",
-            imageUrl: product.image_url,
+            imageUrl: product.imageUrl,
             size,
             price,
             qty,
