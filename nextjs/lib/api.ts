@@ -222,6 +222,7 @@ const SNAKE_TO_CAMEL: Record<string, string> = {
   courier_name: "courierName",
   tracking_number: "trackingNumber",
   order_notes: "orderNotes",
+  order_date: "orderDate",
   status_history: "statusHistory",
   product_id: "productId",
   product_name: "productName",
@@ -384,8 +385,7 @@ class ProductsAPI {
     if (this.cache && !forceRefresh) return this.cache;
     try {
       const rows = await getAll<Record<string, unknown>>("products", { sort: "sortOrder" });
-      const mapped = rows.map((r) => this.mapFromBackend(r));
-      this.cache = mapped.filter((p) => p.status === "active");
+      this.cache = rows.filter((p) => (p.status as string) === "active") as unknown as Product[];
       return this.cache;
     } catch (e) {
       console.warn("Products load failed", e);
