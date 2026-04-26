@@ -122,11 +122,10 @@ export async function apiPost<T>(
   data: Record<string, unknown>
 ): Promise<T> {
   const headers = await authHeaders();
-  const snakeData = deepSnakeCase(data);
   const res = await fetchWithRetry(`${API_BASE}/${endpoint}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...headers },
-    body: JSON.stringify(snakeData),
+    body: JSON.stringify(data),
   }, 15000);
   if (!res.ok) {
     const err = await res.text();
@@ -145,11 +144,10 @@ export async function apiPatch<T>(
   data: Record<string, unknown>
 ): Promise<T> {
   const headers = await authHeaders();
-  const snakeData = deepSnakeCase(data);
   const res = await fetchWithRetry(`${API_BASE}/${endpoint}/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json", ...headers },
-    body: JSON.stringify(snakeData),
+    body: JSON.stringify(data),
   }, 15000);
   if (!res.ok) throw new Error(`PATCH ${endpoint}/${id} failed`);
   const json = await res.json();
