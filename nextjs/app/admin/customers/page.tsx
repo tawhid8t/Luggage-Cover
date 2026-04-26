@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { customersAPI, ordersAPI, adminAuthAPI } from "@/lib/api";
+import { customersAPI, ordersAPI, adminAuthAPI, apiGet } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
 import { formatPrice } from "@/lib/utils";
 import AdminLayout from "@/components/admin/admin-layout";
@@ -14,10 +14,15 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [search, setSearch] = useState("");
   const [session, setSession] = useState<AdminSession | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerOrders, setCustomerOrders] = useState<Order[]>([]);
+
+  const tableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const s = adminAuthAPI.getSession();
@@ -26,18 +31,41 @@ export default function CustomersPage() {
     loadData();
   }, []);
 
-  const loadData = async () => {
-    setLoading(true);
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!tableRef.current || loadingMore || !hasMore) return;
+      const { scrollTop, scrollHeight, clientHeight } = tableRef.current;
+      if (scrollTop + clientHeight >= scrollHeight - 100) loadMore();
+    };
+    const el = tableRef.current;
+    if (el) { el.addEventListener("scroll", handleScroll); return () => el.removeEventListener("scroll", handleScroll); }
+  }, [loadingMore, hasMore]);
+
+  const loadData = async (page = 1) => {
+    if (page === 1) setLoading(true);
+    else setLoadingMore(true);
     try {
-      const [c, o] = await Promise.all([customersAPI.getAll(), ordersAPI.getAll()]);
-      c.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
-      setCustomers(c);
-      setOrders(o);
+      if (page === 1) {
+        const [c, o] = await Promise.all([customersAPI.getAll(), ordersAPI.getAll()]);
+        c.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+        setCustomers(c);
+        setOrders(o);
+      } else {
+        const newCustomers = await apiGet<Customer[]>("customers", { page, limit: 10 });
+        setCustomers(prev => [...prev, ...newCustomers]);
+        setHasMore(newCustomers.length === 10);
+      }
+      setCurrentPage(page);
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
+  };
+
+  const loadMore = () => {
+    if (!loadingMore && hasMore) loadData(currentPage + 1);
   };
 
   const filtered = customers.filter((c) => {

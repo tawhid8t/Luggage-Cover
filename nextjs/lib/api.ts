@@ -51,7 +51,7 @@ async function fetchWithRetry(url: string, options: RequestInit = {}, timeout = 
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   try {
-    const res = await fetch(url, { ...options, signal: controller.signal });
+    const res = await fetch(url, { ...options, headers: { ...options.headers }, signal: controller.signal });
     clearTimeout(id);
     return res;
   } catch (e) {
@@ -77,11 +77,20 @@ export async function apiGet<T>(
   ).toString();
   const url = `${API_BASE}/${endpoint}${qs ? `?${qs}` : ""}`;
   const headers = await authHeaders();
-  const res = await fetchWithRetry(url, { headers }, timeout);
+  const res = await fetchWithRetry(url, { headers }, timeout, 2);
   if (!res.ok) throw new Error(`GET ${endpoint} failed: ${res.status}`);
   const json = await res.json();
-  if (json.data) {
+  // Handle { success, total, data: [...] } response
+  if (json.success && json.data && Array.isArray(json.data)) {
     return deepCamelCase(json.data) as T;
+  }
+  // Handle { success, count, total, page, data: [...] } response
+  if (json.data && Array.isArray(json.data)) {
+    return deepCamelCase(json.data) as T;
+  }
+  // Handle { total, data: [...] } response
+  if (json.total !== undefined && json.data) {
+    return { total: json.total, data: deepCamelCase(json.data) } as unknown as T;
   }
   return json as T;
 }
@@ -269,6 +278,10 @@ const SNAKE_TO_CAMEL: Record<string, string> = {
   updatedAt: "updatedAt",
   created_at: "createdAt",
   updated_at: "updatedAt",
+  // Inventory fields
+  transaction_type: "transactionType",
+  reference: "reference",
+  done_by: "doneBy",
 };
 
 function camelToSnakeCase(str: string): string {
@@ -625,7 +638,8 @@ class OrdersAPI {
     courierName?: string,
     trackingNumber?: string,
     staffNotes?: string,
-    orderDate?: string
+    orderDate?: string,
+    discountAmount?: number
   ) {
     const token = getAdminToken();
     const headers: Record<string, string> = { "Content-Type": "application/json" };
@@ -635,6 +649,9 @@ class OrdersAPI {
     const updateData: Record<string, unknown> = { orderStatus: newStatus, note, courierName, trackingNumber, staffNotes };
     if (orderDate) {
       updateData.orderDate = orderDate;
+    }
+    if (discountAmount !== undefined) {
+      updateData.discountAmount = discountAmount;
     }
     const res = await fetch(`${API_BASE}/orders/${orderId}/status`, {
       method: "PATCH",
@@ -776,6 +793,9 @@ export const customersAPI = {
   },
   async getById(id: string) {
     return apiGetOne<Customer>("customers", id);
+  },
+  async update(id: string, data: Partial<Customer>) {
+    return apiPatch<Customer>("customers", id, data);
   },
 };
 

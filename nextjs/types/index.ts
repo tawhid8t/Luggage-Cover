@@ -113,6 +113,9 @@ export interface Customer {
   district?: string;
   totalOrders: number;
   totalSpent: number;
+  status?: "active" | "blocked";
+  notes?: string;
+  tags?: string[];
   createdAt?: string;
   lastOrderAt?: string;
 }

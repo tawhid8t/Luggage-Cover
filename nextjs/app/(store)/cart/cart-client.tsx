@@ -9,8 +9,8 @@ import { PageHero } from "@/components/layout/page-hero";
 import { Button } from "@/components/ui/button";
 import { cn, formatPrice } from "@/lib/utils";
 
-const DHAKA_CHARGE = 60;
-const OUTSIDE_CHARGE = 120;
+const DHAKA_CHARGE = 70;
+const OUTSIDE_CHARGE = 110;
 
 export function CartClient() {
   const router = useRouter();

@@ -79,6 +79,13 @@ function formatCurrency(amount?: number): string {
   return `৳ ${Number(amount || 0).toLocaleString("en-BD")}`;
 }
 
+function calculateCorrectTotal(order: Order): number {
+  const subtotal = Number(order.subtotal || 0);
+  const discount = Number(order.discountAmount || 0);
+  const delivery = Number(order.deliveryCharge || 0);
+  return subtotal - discount + delivery;
+}
+
 function formatDate(ts?: string): string {
   if (!ts) return "—";
   const d = new Date(ts);
@@ -231,6 +238,7 @@ export default function OrdersPage() {
     }
     const tracking = (document.getElementById("trackingInput") as HTMLInputElement)?.value || "";
     const orderDateInput = (document.getElementById("orderDateInput") as HTMLInputElement)?.value;
+    const discountAmount = Number((document.getElementById("discountAmountInput") as HTMLInputElement)?.value) || 0;
 
     if (!newStatus) {
       showToast("error", "Please select a status");
@@ -240,7 +248,7 @@ export default function OrdersPage() {
     setUpdating(true);
     try {
       const { ordersAPI } = await import("@/lib/api");
-      const result = await ordersAPI.updateStatus(orderId, newStatus as any, note, courier, tracking, undefined, orderDateInput);
+      const result = await ordersAPI.updateStatus(orderId, newStatus as any, note, courier, tracking, undefined, orderDateInput, discountAmount);
 
       showToast("success", "Order status updated!");
       setStatusModalOpen(false);
@@ -351,7 +359,7 @@ tbody tr:hover{background:#f8f9fc}
 <div class="total-row"><span>Subtotal</span><strong>৳ ${Number(order.subtotal || 0).toLocaleString()}</strong></div>
 ${Number(order.discountAmount || 0) > 0 ? `<div class="total-row discount"><span>Discount</span><strong>− ৳ ${Number(order.discountAmount).toLocaleString()}</strong></div>` : ""}
 <div class="total-row"><span>Delivery</span><strong>৳ ${Number(order.deliveryCharge || 0).toLocaleString()}</strong></div>
-<div class="total-row grand"><span>Grand Total</span><span>৳ ${Number(order.totalAmount || 0).toLocaleString()}</span></div>
+<div class="total-row grand"><span>Grand Total</span><span>৳ ${(Number(order.subtotal || 0) - Number(order.discountAmount || 0) + Number(order.deliveryCharge || 0)).toLocaleString()}</span></div>
 </div></div>
 <div class="thank-you"><h2>Thank You for Your Order!</h2><p>luggagecover24@gmail.com · +01328-152066</p></div>
 <div class="footer"><div class="footer-brand"><strong>LUGGAGE COVER BD</strong><br/>luggagecover24@gmail.com · +01328-152066<br/>Dhaka, Bangladesh</div>
@@ -443,7 +451,7 @@ ${Number(order.discountAmount || 0) > 0 ? `<div class="total-row discount"><span
                     <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: ".9rem" }}><span>Subtotal</span><strong>৳ {Number(selectedOrder.subtotal || 0).toLocaleString()}</strong></div>
                     {Number(selectedOrder.discountAmount || 0) > 0 && <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: ".9rem", color: "#27ae60" }}><span>Discount</span><strong>− ৳ {Number(selectedOrder.discountAmount).toLocaleString()}</strong></div>}
                     <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: ".9rem" }}><span>Delivery</span><strong>৳ {Number(selectedOrder.deliveryCharge || 0).toLocaleString()}</strong></div>
-                    <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0 0", fontSize: "1.15rem", fontWeight: 900, borderTop: "2px solid #e8ecf5", marginTop: 6, color: "#4A90E2" }}><span>Grand Total</span><span>৳ {Number(selectedOrder.totalAmount || 0).toLocaleString()}</span></div>
+                    <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0 0", fontSize: "1.15rem", fontWeight: 900, borderTop: "2px solid #e8ecf5", marginTop: 6, color: "#4A90E2" }}><span>Grand Total</span><span>৳ {calculateCorrectTotal(selectedOrder).toLocaleString()}</span></div>
                   </div>
                 </div>
 
@@ -487,7 +495,7 @@ ${Number(order.discountAmount || 0) > 0 ? `<div class="total-row discount"><span
 
                 <div style={{ marginBottom: 16, padding: 12, background: "#f8f9fc", borderRadius: 8 }}>
                   <div style={{ fontSize: ".85rem", color: "var(--admin-muted)", marginBottom: 4 }}>Order Value</div>
-                  <div style={{ fontSize: "1.1rem", fontWeight: 700 }}>৳ {Number(selectedOrder.totalAmount || 0).toLocaleString()}</div>
+                  <div style={{ fontSize: "1.1rem", fontWeight: 700 }}>৳ {calculateCorrectTotal(selectedOrder).toLocaleString()}</div>
                   <div style={{ fontSize: ".85rem", color: "var(--admin-muted)" }}>{selectedOrder.paymentMethod?.toUpperCase() || "COD"} · {selectedOrder.orderStatus}</div>
                 </div>
 
@@ -521,6 +529,11 @@ ${Number(order.discountAmount || 0) > 0 ? `<div class="total-row discount"><span
                 <div className="admin-form-group">
                   <label className="admin-form-label">Order Date</label>
                   <input type="date" id="orderDateInput" className="admin-input" defaultValue={getOrderDate(selectedOrder)?.slice(0, 10) || ""} />
+                </div>
+
+                <div className="admin-form-group">
+                  <label className="admin-form-label">Discount Amount (৳)</label>
+                  <input type="number" id="discountAmountInput" className="admin-input" placeholder="0" defaultValue={selectedOrder.discountAmount || 0} min="0" />
                 </div>
 
                 <div className="admin-form-group">
@@ -626,7 +639,7 @@ ${Number(order.discountAmount || 0) > 0 ? `<div class="total-row discount"><span
                           <small style={{ color: "var(--admin-muted)" }}>{o.customerPhone}</small>
                         </td>
                         <td>{(o.items || []).length} item(s)</td>
-                        <td className="cell-bold">{formatCurrency(o.totalAmount)}</td>
+                        <td className="cell-bold">{formatCurrency(calculateCorrectTotal(o))}</td>
                         <td>
                           <span className={`status-badge status-${o.paymentMethod || "cod"}`}>{o.paymentMethod?.toUpperCase() || "COD"}</span>
                           <br />

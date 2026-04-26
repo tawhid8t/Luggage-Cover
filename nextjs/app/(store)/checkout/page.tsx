@@ -35,7 +35,7 @@ export default function CheckoutPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
   const [discount, setDiscount] = useState({ amount: 0, applied: false });
-  const [deliveryCharge, setDeliveryCharge] = useState(60);
+  const [deliveryCharge, setDeliveryCharge] = useState(70);
   const [orderSuccess, setOrderSuccess] = useState<{ orderNumber: string; phone: string } | null>(null);
 
   useEffect(() => {
@@ -95,14 +95,14 @@ export default function CheckoutPage() {
           productName: i.productName,
           productCode: i.productCode,
           size: i.size,
-          price: i.price,
-          qty: i.qty,
-          total: i.price * i.qty,
+          price: Number(i.price),
+          qty: Number(i.qty),
+          total: Number(i.price) * Number(i.qty),
         })),
-        subtotal,
-        discountAmount: discount.amount,
-        deliveryCharge: deliveryCharge,
-        totalAmount: total,
+        subtotal: Number(subtotal),
+        discountAmount: Number(discount.amount),
+        deliveryCharge: Number(deliveryCharge),
+        totalAmount: Number(total),
         paymentMethod: paymentMethod,
         orderNotes: form.notes.trim(),
       };
@@ -270,10 +270,10 @@ export default function CheckoutPage() {
                           )}
                         >
                           <option value="">Select District…</option>
-                          <optgroup label="Inside Dhaka (৳60)">
+                          <optgroup label="Inside Dhaka (৳70)">
                             <option value="Dhaka">Dhaka</option>
                           </optgroup>
-                          <optgroup label="Outside Dhaka (৳120)">
+                          <optgroup label="Outside Dhaka (৳110)">
                             {DISTRICTS.filter(d => d !== "Dhaka").map((d) => (
                               <option key={d} value={d}>{d}</option>
                             ))}

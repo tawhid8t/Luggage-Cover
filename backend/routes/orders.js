@@ -134,7 +134,7 @@ router.get('/:id', async (req, res) => {
 // ─── ADMIN: Update order status ───────────────────────────────
 router.patch('/:id/status', protect, authorize('admin', 'manager'), async (req, res) => {
   try {
-    const { orderStatus, note, courierName, trackingNumber, staffNotes, orderDate } = req.body;
+    const { orderStatus, note, courierName, trackingNumber, staffNotes, orderDate, discountAmount } = req.body;
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ success: false, message: 'Order not found.' });
 
@@ -145,6 +145,10 @@ router.patch('/:id/status', protect, authorize('admin', 'manager'), async (req, 
     if (staffNotes)     order.staffNotes     = staffNotes;
     if (orderDate) {
       order.createdAt = new Date(orderDate);
+    }
+    if (discountAmount !== undefined) {
+      order.discountAmount = discountAmount;
+      order.totalAmount = order.subtotal - discountAmount + order.deliveryCharge;
     }
 
     // If cancelled before shipping — restore stock

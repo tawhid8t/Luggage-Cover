@@ -1,6 +1,12 @@
 'use client';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import AdminLayout from "@/components/admin/admin-layout";
+
+interface ProductVariant {
+  size: string;
+  stock: number;
+  price: number;
+}
 
 interface Product {
   id: string;
@@ -10,6 +16,7 @@ interface Product {
   stockSmall: number;
   stockMedium: number;
   stockLarge: number;
+  variants?: ProductVariant[];
 }
 
 interface InventoryLog {
@@ -27,37 +34,78 @@ interface InventoryLog {
 
 const TX_TYPES = ["restock", "sale", "adjustment", "damaged", "return"];
 
+function getStockForSize(product: Product, size: string): number {
+  const sizeLower = size.toLowerCase();
+  if (product.variants && product.variants.length > 0) {
+    const variant = product.variants.find(v => v.size.toLowerCase() === sizeLower);
+    if (variant) return variant.stock || 0;
+  }
+  if (sizeLower === "small") return product.stockSmall || 0;
+  if (sizeLower === "medium") return product.stockMedium || 0;
+  if (sizeLower === "large") return product.stockLarge || 0;
+  return 0;
+}
+
 function formatDate(ts?: string): string {
   if (!ts) return "—";
   return new Date(ts).toLocaleDateString("en-BD", { year: "numeric", month: "short", day: "numeric" });
+}
+
+function formatDateTime(ts?: string): string {
+  if (!ts) return "—";
+  return new Date(ts).toLocaleString("en-BD", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
 export default function InventoryPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [logs, setLogs] = useState<InventoryLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingLogs, setLoadingLogs] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [showRestock, setShowRestock] = useState(false);
   const [showAdjust, setShowAdjust] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const [restockForm, setRestockForm] = useState({ productId: "", small: 0, medium: 0, large: 0, notes: "" });
   const [adjustForm, setAdjustForm] = useState({ productId: "", size: "small", type: "restock", qty: 1, notes: "" });
+  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  const showToast = (type: "success" | "error", message: string) => {
+    setToast({ type, message });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   useEffect(() => {
     fetchData();
   }, []);
 
+  const logTableRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!logTableRef.current || loadingLogs || !hasMore) return;
+      const { scrollTop, scrollHeight, clientHeight } = logTableRef.current;
+      if (scrollTop + clientHeight >= scrollHeight - 100) {
+        loadMoreLogs();
+      }
+    };
+    const tableEl = logTableRef.current;
+    if (tableEl) {
+      tableEl.addEventListener("scroll", handleScroll);
+      return () => tableEl.removeEventListener("scroll", handleScroll);
+    }
+  }, [loadingLogs, hasMore]);
+
   const fetchData = async () => {
     try {
       const { apiGet } = await import("@/lib/api");
-      const [productsData, logsData] = await Promise.all([
-        apiGet<Product[]>("tables/lc_products"),
-        apiGet<InventoryLog[]>("tables/lc_inventory"),
-      ]);
+      const productsData = await apiGet<Product[]>("products");
+      console.log("Products raw:", productsData);
+      if (productsData.length > 0) console.log("First product:", productsData[0]);
       productsData.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-      logsData.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
       setProducts(productsData);
-      setLogs(logsData);
+      await fetchLogs(1);
     } catch (e) {
       console.error("Failed to load inventory:", e);
     } finally {
@@ -65,40 +113,56 @@ export default function InventoryPage() {
     }
   };
 
-  const activeProducts = products.filter((p) => p.status === "active");
+  const fetchLogs = async (page: number) => {
+    setLoadingLogs(true);
+    try {
+      const { apiGet } = await import("@/lib/api");
+      const response = await apiGet<InventoryLog[]>("inventory", { page, limit: 20 });
+      const newLogs = Array.isArray(response) ? response : [];
+      if (page === 1) {
+        setLogs(newLogs);
+      } else {
+        setLogs(prev => [...prev, ...newLogs]);
+      }
+      setCurrentPage(page);
+      setHasMore(newLogs.length === 20);
+    } catch (e) {
+      console.error("Failed to load logs:", e);
+    } finally {
+      setLoadingLogs(false);
+    }
+  };
+
+  const loadMoreLogs = () => {
+    if (!loadingLogs && hasMore) {
+      fetchLogs(currentPage + 1);
+    }
+  };
+
+  const activeProducts = products.filter((p) => (p.status || "active") === "active");
 
   const handleRestock = async () => {
     if (!restockForm.productId) return;
     setSaving(true);
     try {
-      const { apiPost, apiPatch } = await import("@/lib/api");
+      const { apiPost } = await import("@/lib/api");
       const product = products.find((p) => p.id === restockForm.productId);
-      
-      await apiPatch("tables/lc_products", restockForm.productId, {
+
+      await apiPost("inventory/restock", {
+        productId: restockForm.productId,
         stockSmall: restockForm.small,
         stockMedium: restockForm.medium,
         stockLarge: restockForm.large,
+        notes: restockForm.notes,
       });
 
-      for (const [size, qty] of [["small", restockForm.small], ["medium", restockForm.medium], ["large", restockForm.large]] as [string, number][]) {
-        if (qty > 0) {
-          await apiPost("tables/lc_inventory", {
-            productId: restockForm.productId,
-            productName: product?.name,
-            productCode: product?.code,
-            size,
-            transactionType: "restock",
-            quantity: qty,
-            notes: restockForm.notes,
-          });
-        }
-      }
-
+      showToast("success", `${product?.name || "Product"} restocked!`);
       setShowRestock(false);
       setRestockForm({ productId: "", small: 0, medium: 0, large: 0, notes: "" });
       await fetchData();
     } catch (e) {
       console.error("Restock failed:", e);
+      showToast("error", "Restock failed");
     } finally {
       setSaving(false);
     }
@@ -108,39 +172,24 @@ export default function InventoryPage() {
     if (!adjustForm.productId) return;
     setSaving(true);
     try {
-      const { apiPost, apiPatch, apiGet } = await import("@/lib/api");
+      const { apiPost } = await import("@/lib/api");
       const product = products.find((p) => p.id === adjustForm.productId);
-      const stockKey = `stock_${adjustForm.size}` as keyof Product;
-      const currentStock = (product?.[stockKey] as number) || 0;
 
-      let newStock = currentStock;
-      if (adjustForm.type === "restock" || adjustForm.type === "return") {
-        newStock = currentStock + adjustForm.qty;
-      } else if (adjustForm.type === "damaged") {
-        newStock = Math.max(0, currentStock - adjustForm.qty);
-      } else {
-        newStock = adjustForm.qty;
-      }
-
-      await apiPatch("tables/lc_products", adjustForm.productId, {
-        [stockKey]: newStock,
-      });
-
-      await apiPost("tables/lc_inventory", {
+      await apiPost("inventory/adjust", {
         productId: adjustForm.productId,
-        productName: product?.name,
-        productCode: product?.code,
         size: adjustForm.size,
         transactionType: adjustForm.type,
-        quantity: adjustForm.type === "damaged" ? -adjustForm.qty : adjustForm.qty,
+        quantity: adjustForm.qty,
         notes: adjustForm.notes,
       });
 
+      showToast("success", "Inventory updated!");
       setShowAdjust(false);
       setAdjustForm({ productId: "", size: "small", type: "restock", qty: 1, notes: "" });
       await fetchData();
     } catch (e) {
       console.error("Adjustment failed:", e);
+      showToast("error", "Adjustment failed");
     } finally {
       setSaving(false);
     }
@@ -148,6 +197,13 @@ export default function InventoryPage() {
 
   return (
     <AdminLayout title="Inventory" breadcrumb="Home / Inventory">
+      {/* Toast Notifications */}
+      {toast && (
+        <div className={`toast ${toast.type === "success" ? "toast-success" : "toast-error"}`}>
+          {toast.type === "success" ? "✓" : "✕"} {toast.message}
+        </div>
+      )}
+
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
         {/* Current Stock */}
         <div className="admin-card">
@@ -158,7 +214,7 @@ export default function InventoryPage() {
             </button>
           </div>
           <div className="admin-card-body">
-            <div className="table-wrap">
+            <div className="table-wrap" style={{ maxHeight: "400px", overflowY: "auto" }}>
               <table className="data-table">
                 <thead>
                   <tr><th>Design</th><th>Code</th><th>S</th><th>M</th><th>L</th><th>Total</th></tr>
@@ -170,23 +226,17 @@ export default function InventoryPage() {
                     <tr><td colSpan={6} className="text-center p-8">No products found</td></tr>
                   ) : (
                     activeProducts.map((p) => {
-                      const total = Number(p.stockSmall || 0) + Number(p.stockMedium || 0) + Number(p.stockLarge || 0);
+                      const stockS = getStockForSize(p, "small");
+                      const stockM = getStockForSize(p, "medium");
+                      const stockL = getStockForSize(p, "large");
+                      const total = stockS + stockM + stockL;
                       return (
                         <tr key={p.id}>
                           <td className="cell-bold">{p.name}</td>
                           <td className="cell-code">{p.code}</td>
-                          <td>
-                            <span className={Number(p.stockSmall || 0) < 5 ? "text-danger font-bold" : ""}>{p.stockSmall || 0}</span>
-                            {Number(p.stockSmall || 0) < 5 && <span className="status-badge status-cancelled" style={{ marginLeft: 4 }}>Low</span>}
-                          </td>
-                          <td>
-                            <span className={Number(p.stockMedium || 0) < 5 ? "text-danger font-bold" : ""}>{p.stockMedium || 0}</span>
-                            {Number(p.stockMedium || 0) < 5 && <span className="status-badge status-cancelled" style={{ marginLeft: 4 }}>Low</span>}
-                          </td>
-                          <td>
-                            <span className={Number(p.stockLarge || 0) < 5 ? "text-danger font-bold" : ""}>{p.stockLarge || 0}</span>
-                            {Number(p.stockLarge || 0) < 5 && <span className="status-badge status-cancelled" style={{ marginLeft: 4 }}>Low</span>}
-                          </td>
+                          <td className={stockS < 5 ? "text-danger font-bold" : ""}>{stockS}</td>
+                          <td className={stockM < 5 ? "text-danger font-bold" : ""}>{stockM}</td>
+                          <td className={stockL < 5 ? "text-danger font-bold" : ""}>{stockL}</td>
                           <td className="cell-bold">{total}</td>
                         </tr>
                       );
@@ -196,9 +246,9 @@ export default function InventoryPage() {
               </table>
             </div>
           </div>
-        </div>
 
-        {/* Quick Adjustment */}
+          {/* Quick Adjustment */}
+        </div>
         <div className="admin-card">
           <div className="admin-card-header">
             <div className="admin-card-title"><i className="fas fa-sliders-h"></i> Quick Adjustment</div>
@@ -294,24 +344,39 @@ export default function InventoryPage() {
                 ) : logs.length === 0 ? (
                   <tr><td colSpan={8} className="text-center p-8">No inventory transactions yet.</td></tr>
                 ) : (
-                  logs.slice(0, 50).map((t) => (
-                    <tr key={t.id}>
-                      <td>{formatDate(t.createdAt)}</td>
-                      <td className="cell-bold">{t.productName || "—"}</td>
-                      <td className="cell-code">{t.productCode || "—"}</td>
-                      <td style={{ textTransform: "capitalize" }}>{t.size || "—"}</td>
-                      <td>
-                        <span className={`status-badge status-${t.transactionType === "restock" || t.transactionType === "return" ? "active" : "inactive"}`}>
-                          {t.transactionType}
-                        </span>
-                      </td>
-                      <td className={(t.quantity || 0) > 0 ? "text-success font-bold" : "text-danger font-bold"}>
-                        {(t.quantity || 0) > 0 ? "+" : ""}{t.quantity}
-                      </td>
-                      <td>{t.notes || "—"}</td>
-                      <td>{t.reference || "—"}</td>
-                    </tr>
-                  ))
+                  <>
+                    {logs.map((t) => (
+                      <tr key={t.id}>
+                        <td>{formatDate(t.createdAt)}</td>
+                        <td className="cell-bold">{t.productName || "—"}</td>
+                        <td className="cell-code">{t.productCode || "—"}</td>
+                        <td style={{ textTransform: "capitalize" }}>{t.size || "—"}</td>
+                        <td>
+                          <span className={`status-badge status-${t.transactionType === "restock" || t.transactionType === "return" ? "active" : "inactive"}`}>
+                            {t.transactionType}
+                          </span>
+                        </td>
+                        <td className={(t.quantity || 0) > 0 ? "text-success font-bold" : "text-danger font-bold"}>
+                          {(t.quantity || 0) > 0 ? "+" : ""}{t.quantity}
+                        </td>
+                        <td>{t.notes || "—"}</td>
+                        <td>{t.reference || "—"}</td>
+                      </tr>
+                    ))}
+                    {hasMore && (
+                      <tr>
+                        <td colSpan={8} className="text-center p-4">
+                          <button
+                            className="admin-btn admin-btn-outline"
+                            onClick={loadMoreLogs}
+                            disabled={loadingLogs}
+                          >
+                            {loadingLogs ? "Loading..." : "Load More"}
+                          </button>
+                        </td>
+                      </tr>
+                    )}
+                  </>
                 )}
               </tbody>
             </table>
