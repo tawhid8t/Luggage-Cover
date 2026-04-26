@@ -12,7 +12,8 @@ interface ProductCardProps {
 
 export function ProductCard({ product, priority }: ProductCardProps) {
   const emoji = productsAPI.getEmoji(product);
-
+  const price = product.priceSmall ?? 990;
+  
   return (
     <Link href={`/product/${product.id}`} className="group block">
       <article className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_16px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_40px_rgba(74,144,226,0.2)] transition-all duration-300 hover:-translate-y-1.5">
@@ -69,7 +70,7 @@ export function ProductCard({ product, priority }: ProductCardProps) {
           </h3>
           <div className="flex items-baseline gap-1 mb-1">
             <span className="text-[1.1rem] font-extrabold text-brand-blue">
-              ৳ {product.priceSmall.toLocaleString()}
+              ৳ {price.toLocaleString()}
             </span>
             <span className="text-xs text-[#9fa8c7] font-medium">
               / cover
