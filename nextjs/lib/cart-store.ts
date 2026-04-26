@@ -134,8 +134,8 @@ export const useCartStore = create<CartStore>()(
         try {
           await settingsAPI.load();
         } catch {}
-        const dhakaCharge = settingsAPI.getNumber("delivery_charge_dhaka", 60);
-        const outsideCharge = settingsAPI.getNumber("delivery_charge_outside", 120);
+        const dhakaCharge = settingsAPI.getNumber("delivery_charge_dhaka", 70);
+        const outsideCharge = settingsAPI.getNumber("delivery_charge_outside", 110);
         const isDhaka = (district || "").toLowerCase().includes("dhaka");
         return isDhaka ? dhakaCharge : outsideCharge;
       },

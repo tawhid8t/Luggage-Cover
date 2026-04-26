@@ -104,9 +104,9 @@ export async function apiGetRaw<T>(
   if (!res.ok) throw new Error(`GET ${endpoint} failed: ${res.status}`);
   const json = await res.json();
   if (json.data) {
-    return json.data as T;
+    return deepCamelCase(json.data) as T;
   }
-  return json as T;
+  return deepCamelCase(json) as T;
 }
 
 export async function apiGetOne<T>(endpoint: string, id: string): Promise<T> {
