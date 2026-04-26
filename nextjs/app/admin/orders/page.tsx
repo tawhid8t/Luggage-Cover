@@ -42,7 +42,7 @@ interface Order {
   totalAmount?: number;
   paymentMethod?: string;
   paymentStatus?: string;
-  order_status?: string;
+  orderStatus?: string;
   courierName?: string;
   trackingNumber?: string;
   orderNotes?: string;
@@ -196,7 +196,7 @@ export default function OrdersPage() {
   };
 
   const filtered = orders.filter((o) => {
-    if (statusFilter !== "all" && o.order_status !== statusFilter) return false;
+    if (statusFilter !== "all" && o.orderStatus !== statusFilter) return false;
     if (search) {
       const q = search.toLowerCase();
       return (
@@ -209,7 +209,7 @@ export default function OrdersPage() {
   });
 
   const statusCounts = ALL_STATUSES.reduce((acc, s) => {
-    acc[s] = orders.filter((o) => o.order_status === s).length;
+    acc[s] = orders.filter((o) => o.orderStatus === s).length;
     return acc;
   }, {} as Record<string, number>);
 
@@ -414,7 +414,7 @@ ${Number(order.discountAmount || 0) > 0 ? `<div class="total-row discount"><span
                   </div>
                   <div>
                     <h4 style={{ marginBottom: 10, fontSize: ".85rem", color: "var(--admin-muted)", textTransform: "uppercase", fontWeight: 700 }}>Order Info</h4>
-                    <p>Status: <span className={`status-badge status-${selectedOrder.order_status}`}>{STATUS_LABELS[selectedOrder.order_status || "new"]?.label || selectedOrder.order_status}</span></p>
+                    <p>Status: <span className={`status-badge status-${selectedOrder.orderStatus}`}>{STATUS_LABELS[selectedOrder.orderStatus || "new"]?.label || selectedOrder.orderStatus}</span></p>
                     <p>Payment: <span className={`status-badge status-${selectedOrder.paymentMethod || "cod"}`}>{selectedOrder.paymentMethod?.toUpperCase() || "COD"}</span></p>
                     <p>Payment Status: <span className={`status-badge status-${selectedOrder.paymentStatus || "pending"}`}>{selectedOrder.paymentStatus || "pending"}</span></p>
                     <p>Courier: <strong>{selectedOrder.courierName || "—"}</strong></p>
@@ -488,12 +488,12 @@ ${Number(order.discountAmount || 0) > 0 ? `<div class="total-row discount"><span
                 <div style={{ marginBottom: 16, padding: 12, background: "#f8f9fc", borderRadius: 8 }}>
                   <div style={{ fontSize: ".85rem", color: "var(--admin-muted)", marginBottom: 4 }}>Order Value</div>
                   <div style={{ fontSize: "1.1rem", fontWeight: 700 }}>৳ {Number(selectedOrder.totalAmount || 0).toLocaleString()}</div>
-                  <div style={{ fontSize: ".85rem", color: "var(--admin-muted)" }}>{selectedOrder.paymentMethod?.toUpperCase() || "COD"} · {selectedOrder.order_status}</div>
+                  <div style={{ fontSize: ".85rem", color: "var(--admin-muted)" }}>{selectedOrder.paymentMethod?.toUpperCase() || "COD"} · {selectedOrder.orderStatus}</div>
                 </div>
 
                 <div className="admin-form-group">
                   <label className="admin-form-label">New Status</label>
-                  <select id="newStatusSelect" className="admin-select" style={{ width: "100%" }} defaultValue={selectedOrder.order_status || "new"}>
+                  <select id="newStatusSelect" className="admin-select" style={{ width: "100%" }} defaultValue={selectedOrder.orderStatus || "new"}>
                     {ALL_STATUSES.map((s) => (
                       <option key={s} value={s}>{STATUS_LABELS[s].label}</option>
                     ))}
@@ -632,7 +632,7 @@ ${Number(order.discountAmount || 0) > 0 ? `<div class="total-row discount"><span
                           <br />
                           <span className={`status-badge status-${o.paymentStatus || "pending"}`}>{o.paymentStatus || "pending"}</span>
                         </td>
-                        <td><span className={`status-badge status-${o.order_status || "new"}`}>{STATUS_LABELS[o.order_status || "new"]?.label || o.order_status}</span></td>
+                        <td><span className={`status-badge status-${o.orderStatus || "new"}`}>{STATUS_LABELS[o.orderStatus || "new"]?.label || o.orderStatus}</span></td>
                         <td>{formatDate(getOrderDate(o))}</td>
                         <td>
                           {o.courierName || "—"}
