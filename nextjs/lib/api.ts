@@ -44,6 +44,8 @@ async function authHeaders(): Promise<Record<string, string>> {
 }
 
 const DEFAULT_TIMEOUT = 10000;
+const BUILD_TIMEOUT = 30000;
+const LARGE_TIMEOUT = 30000;
 
 async function fetchWithRetry(url: string, options: RequestInit = {}, timeout = DEFAULT_TIMEOUT, retries = 2): Promise<Response> {
   const controller = new AbortController();
@@ -97,7 +99,7 @@ export async function apiGetRaw<T>(
       ...authHeader,
       'Cache-Control': 'no-cache',
     },
-  }, 15000);
+  }, LARGE_TIMEOUT);
   if (!res.ok) throw new Error(`GET ${endpoint} failed: ${res.status}`);
   const json = await res.json();
   if (json.data) {
@@ -108,7 +110,7 @@ export async function apiGetRaw<T>(
 
 export async function apiGetOne<T>(endpoint: string, id: string): Promise<T> {
   const headers = await authHeaders();
-  const res = await fetchWithRetry(`${API_BASE}/${endpoint}/${id}`, { headers }, 15000);
+  const res = await fetchWithRetry(`${API_BASE}/${endpoint}/${id}`, { headers }, LARGE_TIMEOUT);
   if (!res.ok) throw new Error(`GET ${endpoint}/${id} failed`);
   const json = await res.json();
   return deepCamelCase(json) as T;
@@ -176,7 +178,7 @@ async function getAll<T>(
   const data = await apiGet<T[]>(table, {
     limit: 200,
     ...extraParams,
-  });
+  }, LARGE_TIMEOUT);
   return Array.isArray(data) ? data : [];
   }
 
