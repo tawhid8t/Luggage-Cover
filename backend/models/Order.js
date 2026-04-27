@@ -84,5 +84,8 @@ OrderSchema.pre('save', async function (next) {
 OrderSchema.index({ customerPhone: 1 });
 OrderSchema.index({ orderStatus: 1 });
 OrderSchema.index({ createdAt: -1 });
+OrderSchema.index({ createdAt: -1, orderStatus: 1 }); // Compound for date+status queries
+OrderSchema.index({ createdAt: -1, paymentStatus: 1 }); // Compound for date+payment queries
+OrderSchema.index({ "items.productCode": 1 }); // For product sales queries
 
 module.exports = mongoose.model('Order', OrderSchema);

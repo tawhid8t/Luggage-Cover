@@ -1562,6 +1562,36 @@ input, select, textarea { font-family: inherit; }
 .fb-guide-metric-val { font-size: 1.1rem; font-weight: 800; color: #1877f2; }
 .fb-guide-metric-lbl { font-size: 0.72rem; color: var(--admin-muted); }
 
+/* === DATE FILTER === */
+.date-filter { margin-bottom: 16px; }
+.date-filter-main { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.date-filter-periods { display: flex; gap: 4px; flex-wrap: wrap; }
+.date-filter-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--card-border);
+  background: white;
+  color: var(--admin-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.date-filter-btn:hover { border-color: var(--brand-blue); color: var(--brand-blue); }
+.date-filter-btn.active { background: var(--brand-blue); border-color: var(--brand-blue); color: white; }
+.date-filter-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.date-filter-display {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.85rem; color: var(--admin-muted);
+  padding: 6px 12px;
+  background: var(--color-bg-subtle);
+  border-radius: 6px;
+}
+.date-filter-custom { margin-top: 12px; padding: 16px; background: var(--color-bg-subtle); border-radius: 8px; }
+.date-filter-custom-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+.date-filter-input-wrap { display: flex; flex-direction: column; gap: 4px; }
+.date-filter-input-wrap label { font-size: 0.75rem; font-weight: 600; color: var(--admin-muted); }
+
 /* === RESPONSIVE === */
 @media (max-width: 1100px) {
   .fb-kpi-grid { grid-template-columns: repeat(3, 1fr); }

@@ -1,15 +1,17 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   ordersAPI, productsAPI, customersAPI, adminAuthAPI,
   productionBatchesAPI, fbCampaignsAPI, contentBudgetAPI,
+  reportsAPI,
   type ProductionBatch, type FBCampaign, type ContentBudgetEntry,
 } from "@/lib/api";
 import { formatPrice as fp, formatDate } from "@/lib/utils";
-import { Pie } from "recharts";
+import { PieChart, Pie, ResponsiveContainer, Cell } from "recharts";
 import AdminLayout from "@/components/admin/admin-layout";
+import DateFilter, { type DatePeriod } from "@/components/admin/date-filter";
 import type { Order, Product, Customer } from "@/types";
 import type { AdminSession } from "@/types";
 
@@ -39,6 +41,11 @@ export default function DashboardPage() {
   const [fbCampaigns, setFbCampaigns] = useState<FBCampaign[]>([]);
   const [contentBudget, setContentBudget] = useState<ContentBudgetEntry[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
+  
+  // Date filter state
+  const [datePeriod, setDatePeriod] = useState<DatePeriod>("all");
+  const [reportData, setReportData] = useState<any>(null);
+  const [reportLoading, setReportLoading] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -46,7 +53,31 @@ export default function DashboardPage() {
     if (!s) { router.replace("/admin/login"); return; }
     setSession(s);
     loadData();
+    loadReportData();
   }, [refreshKey]);
+
+  const handlePeriodChange = useCallback((period: DatePeriod, startDate?: string, endDate?: string) => {
+    setDatePeriod(period);
+    // Reload report data with new period
+    loadReportData(period, startDate, endDate);
+  }, []);
+
+  const loadReportData = async (period: DatePeriod = datePeriod, start?: string, end?: string) => {
+    setReportLoading(true);
+    try {
+      const data = await reportsAPI.getAggregate(period, "day", { 
+        startDate: start, 
+        endDate: end,
+        nocache: true 
+      });
+      setReportData(data);
+    } catch (e) {
+      console.error("Failed to load report data:", e);
+      setReportData(null);
+    } finally {
+      setReportLoading(false);
+    }
+  };
 
   const handleRefresh = () => {
     setRefreshKey((k) => k + 1);
@@ -78,11 +109,18 @@ export default function DashboardPage() {
     }
   };
 
-  const newOrders = orders.filter((o) => o.orderStatus === "new").length;
-  const deliveredCount = orders.filter((o) => o.orderStatus === "delivered").length;
-  const pendingOrders = orders.filter((o) =>
+  // Use API report data when available (filtered by date), fallback to calculated from orders
+  const stats = reportData?.stats;
+  
+  const newOrders = stats?.newOrders ?? orders.filter((o) => o.orderStatus === "new").length;
+  const deliveredCount = stats?.deliveredOrders ?? orders.filter((o) => o.orderStatus === "delivered").length;
+  const pendingOrders = stats?.pendingOrders ?? orders.filter((o) =>
     ["new", "confirmed", "packing", "packed"].includes(o.orderStatus)
   ).length;
+  const totalOrdersCount = stats?.totalOrders ?? orders.length;
+  
+  const deliveredRevenueTotal = stats?.totalRevenue ?? 0;
+  const avgOrderValue = stats?.avgOrderValue ?? 0;
   const lowStock = products.filter(
     (p) =>
       p.status === "active" &&
@@ -102,7 +140,7 @@ export default function DashboardPage() {
   const avgUnitCost = totalUnits > 0 ? totalCostAll / totalUnits : 0;
 
   const deliveredOrdersList = orders.filter((o) => o.orderStatus === "delivered");
-  const deliveredRevenue = deliveredOrdersList.reduce((s, o) => s + (o.totalAmount || 0), 0);
+  const deliveredRevenue = stats?.totalRevenue ?? deliveredOrdersList.reduce((s, o) => s + (o.totalAmount || 0), 0);
   let deliveredQty = 0;
   deliveredOrdersList.forEach((o) => { (o.items || []).forEach((i) => { deliveredQty += (i.qty || 1); }); });
   const estimatedCOGS = deliveredQty * avgUnitCost;
@@ -142,10 +180,15 @@ export default function DashboardPage() {
   const profitColor = grossProfit >= 0 ? "#27ae60" : "#e74c3c";
   const netProfitColor = netProfit >= 0 ? "#27ae60" : "#e74c3c";
 
-  const statusCounts: Record<string, number> = {};
-  orders.forEach((o) => {
-    statusCounts[o.orderStatus] = (statusCounts[o.orderStatus] || 0) + 1;
-  });
+  // Use API byStatus when available, fallback to calculated from orders
+  const apiByStatus = reportData?.byStatus;
+  const statusCounts: Record<string, number> = apiByStatus ?? (() => {
+    const counts: Record<string, number> = {};
+    orders.forEach((o) => {
+      counts[o.orderStatus] = (counts[o.orderStatus] || 0) + 1;
+    });
+    return counts;
+  })();
 
   const chartData = Object.entries(STATUS_LABELS)
     .filter(([k]) => statusCounts[k] > 0)
@@ -215,6 +258,13 @@ export default function DashboardPage() {
 
   return (
     <AdminLayout title="Dashboard" breadcrumb="Home / Dashboard">
+      {/* Date Filter */}
+      <DateFilter
+        period={datePeriod}
+        onPeriodChange={handlePeriodChange}
+        loading={loading || reportLoading}
+      />
+
       {/* Stats */}
       <div className="stats-grid">
         <div className="stat-card">
@@ -273,7 +323,7 @@ export default function DashboardPage() {
           </div>
           <div className="stat-info">
             <div className="stat-label">Total Orders</div>
-            <div className="stat-value">{orders.length}</div>
+            <div className="stat-value">{totalOrdersCount}</div>
             <div className="stat-change up">{newOrders} new</div>
           </div>
         </div>
@@ -336,6 +386,39 @@ export default function DashboardPage() {
           <div>Add <a href="/admin/production" style={{ color: "var(--brand-blue)", fontWeight: 600 }}>production batches</a> and <a href="/admin/facebook" style={{ color: "var(--brand-blue)", fontWeight: 600 }}>Facebook campaigns</a> to see the full profit waterfall.</div>
         </div>
       )}
+
+      {/* Profit Per Cover Banner */}
+      {hasBatchData ? (
+        <div className="profit-per-cover-banner">
+          <div className="profit-per-cover-icon">📊</div>
+          <div className="profit-per-cover-content">
+            <div className="profit-per-cover-title">Profit Per Cover (Based on Production Data)</div>
+            <div className="profit-per-cover-details">
+              <span>Avg Unit Cost: <strong>৳{Math.round(avgUnitCost)}</strong></span>
+              <span>|</span>
+              <span>S (৳{avgSell.small}): <strong>≈ ৳{avgSell.small - Math.round(avgUnitCost)} profit</strong></span>
+              <span>M (৳{avgSell.medium}): <strong>≈ ৳{avgSell.medium - Math.round(avgUnitCost)} profit</strong></span>
+              <span>L (৳{avgSell.large}): <strong>≈ ৳{avgSell.large - Math.round(avgUnitCost)} profit</strong></span>
+            </div>
+          </div>
+          <div className="profit-per-cover-result">
+            <div className="text-muted">Avg profit / cover</div>
+            <div className="profit-per-cover-value">৳{avgProfitPerCover}</div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Low Stock Alert */}
+      {lowStock.length > 0 ? (
+        <div className="admin-alert admin-alert-warning">
+          <span>⚠</span>
+          <div>
+            <strong>Low Stock Alert!</strong>{" "}
+            {lowStock.map((p) => `${p.name} (${[(p.stockSmall as number) < 5 ? "S" : "", (p.stockMedium as number) < 5 ? "M" : "", (p.stockLarge as number) < 5 ? "L" : ""].filter(Boolean).join(",")}) has low stock`).join(" · ")}
+            <a href="/admin/inventory" style={{ marginLeft: 8, color: "var(--brand-blue)", fontWeight: 600 }}>Manage Inventory</a>
+          </div>
+        </div>
+      ) : null}
 
       {/* Quick Actions */}
       <div className="quick-actions-grid">
@@ -513,17 +596,25 @@ export default function DashboardPage() {
 
 function DoughnutChart({ data }: { data: Array<{ name: string; value: number; fill: string }> }) {
   return (
-    <Pie
-      data={data}
-      dataKey="value"
-      nameKey="name"
-      cx="50%"
-      cy="50%"
-      innerRadius={50}
-      outerRadius={90}
-      paddingAngle={2}
-      stroke="#fff"
-      strokeWidth={2}
-    />
+    <ResponsiveContainer width="100%" height="100%">
+      <PieChart>
+        <Pie
+          data={data}
+          dataKey="value"
+          nameKey="name"
+          cx="50%"
+          cy="50%"
+          innerRadius={50}
+          outerRadius={90}
+          paddingAngle={2}
+          stroke="#fff"
+          strokeWidth={2}
+        >
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={entry.fill} />
+          ))}
+        </Pie>
+      </PieChart>
+    </ResponsiveContainer>
   );
 }

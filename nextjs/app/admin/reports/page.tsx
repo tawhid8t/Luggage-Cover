@@ -1,22 +1,35 @@
 'use client';
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ordersAPI, customersAPI, adminAuthAPI } from "@/lib/api";
 import AdminLayout from "@/components/admin/admin-layout";
 
-interface Order {
-  id: string;
-  orderNumber?: string;
-  customerName?: string;
-  items?: { productCode?: string; productName?: string; qty?: number; price?: number; total?: number }[];
-  orderStatus?: string;
-  totalAmount: number;
-  discountAmount?: number;
-  createdAt?: string;
+interface OrderItem {
+  productCode?: string;
+  productName?: string;
+  qty?: number;
+  price?: number;
+  total?: number;
 }
 
-interface Product {
-  id: string;
-  name: string;
-  code: string;
+interface Order {
+  _id?: string;
+  id?: string;
+  orderNumber?: string;
+  customerName?: string;
+  customerPhone?: string;
+  customerEmail?: string;
+  shippingAddress?: string;
+  district?: string;
+  items?: OrderItem[];
+  subtotal?: number;
+  discountAmount?: number;
+  deliveryCharge?: number;
+  totalAmount?: number;
+  paymentMethod?: string;
+  paymentStatus?: string;
+  orderStatus?: string;
+  createdAt?: string;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -46,74 +59,122 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function ReportsPage() {
+  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<any>(null);
+  const [mounted, setMounted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ type: string; message: string } | null>(null);
 
   useEffect(() => {
+    const s = adminAuthAPI.getSession();
+    if (!s) {
+      router.replace("/admin/login");
+      return;
+    }
+    setSession(s);
+    setMounted(true);
     fetchData();
-  }, []);
+  }, [router]);
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const showToast = (type: string, message: string) => {
+    setToast({ type, message });
+  };
 
   const fetchData = async () => {
     try {
-      const { apiGet } = await import("@/lib/api");
-      const [ordersData, productsData] = await Promise.all([
-        apiGet<Order[]>("tables/lc_orders"),
-        apiGet<Product[]>("tables/lc_products"),
-      ]);
-      setOrders(ordersData);
-      setProducts(productsData);
+      const ordersData = await ordersAPI.getAll();
+      setOrders(ordersData || []);
     } catch (e) {
       console.error("Failed to load reports:", e);
+      setError("Failed to load reports: " + String(e));
+      showToast("error", "Failed to load reports");
     } finally {
       setLoading(false);
     }
   };
 
-  const exportCSV = (type: string) => {
+  const exportCSV = async (type: string) => {
+    showToast("info", `Preparing ${type} export...`);
     let rows: string[][] = [];
     let filename = "";
 
-    if (type === "orders") {
-      filename = "orders.csv";
-      rows = [
-        ["Order #", "Customer", "Total", "Status", "Payment", "Date"],
-        ...orders.map((o) => [
-          o.orderNumber || o.id?.slice(0, 8) || "",
-          o.customerName || "",
-          String(o.totalAmount || 0),
-          o.orderStatus || "",
-          "",
-          o.createdAt ? new Date(o.createdAt).toLocaleDateString() : "",
-        ]),
-      ];
-    } else if (type === "sales") {
-      filename = "sales-report.csv";
-      const salesByDesign: Record<string, { name: string; code: string; qty: number; revenue: number }> = {};
-      orders.forEach((o) => {
-        (o.items || []).forEach((i) => {
-          const code = i.productCode || "unknown";
-          if (!salesByDesign[code]) {
-            salesByDesign[code] = { name: i.productName || code, code, qty: 0, revenue: 0 };
-          }
-          salesByDesign[code].qty += i.qty || 0;
-          salesByDesign[code].revenue += i.total || (i.price || 0) * (i.qty || 0);
+    try {
+      if (type === "orders") {
+        filename = "orders.csv";
+        rows = [
+          ["Order #", "Customer", "Phone", "Address", "Items", "Total", "Discount", "Delivery", "Payment Method", "Payment Status", "Order Status", "Date"],
+          ...orders.map((o) => [
+            o.orderNumber || o._id?.slice(0, 8) || "",
+            o.customerName || "",
+            o.customerPhone || "",
+            o.shippingAddress || "",
+            String(o.items?.length || 0),
+            String(o.totalAmount || 0),
+            String(o.discountAmount || 0),
+            String(o.deliveryCharge || 0),
+            o.paymentMethod || "COD",
+            o.paymentStatus || "pending",
+            o.orderStatus || "",
+            o.createdAt ? new Date(o.createdAt).toLocaleDateString() : "",
+          ]),
+        ];
+      } else if (type === "customers") {
+        const customers = await customersAPI.getAll();
+        filename = "customers.csv";
+        rows = [
+          ["Name", "Phone", "Email", "District", "Address", "Total Orders", "Total Spent", "Status"],
+          ...(customers || []).map((c: any) => [
+            c.fullName || c.name || "",
+            c.phone || "",
+            c.email || "",
+            c.district || "",
+            c.address || "",
+            String(c.totalOrders || 0),
+            String(c.totalSpent || 0),
+            c.status || "active",
+          ]),
+        ];
+      } else if (type === "sales") {
+        filename = "sales-report.csv";
+        const salesByDesign: Record<string, { name: string; code: string; qty: number; revenue: number }> = {};
+        orders.forEach((o) => {
+          (o.items || []).forEach((i) => {
+            const code = i.productCode || "unknown";
+            if (!salesByDesign[code]) {
+              salesByDesign[code] = { name: i.productName || code, code, qty: 0, revenue: 0 };
+            }
+            salesByDesign[code].qty += i.qty || 0;
+            salesByDesign[code].revenue += i.total || (i.price || 0) * (i.qty || 0);
+          });
         });
-      });
-      rows = [
-        ["Design Code", "Design Name", "Quantity Sold", "Revenue"],
-        ...Object.values(salesByDesign).map((d) => [d.code, d.name, String(d.qty), String(d.revenue)]),
-      ];
-    }
+        rows = [
+          ["Design Code", "Design Name", "Quantity Sold", "Revenue"],
+          ...Object.values(salesByDesign).map((d) => [d.code, d.name, String(d.qty), String(d.revenue)]),
+        ];
+      }
 
-    const csv = rows.map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
+      const csv = rows.map((r) => r.map((c) => `"${String(c || "").replace(/"/g, '""')}"`).join(",")).join("\n");
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${type}-${Date.now()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("success", `${type} exported!`);
+    } catch (e) {
+      console.error("Export failed:", e);
+      showToast("error", "Export failed");
+    }
   };
 
   const formatCurrency = (n: number) => `৳${(n || 0).toLocaleString("en-BD")}`;
@@ -152,8 +213,23 @@ export default function ReportsPage() {
 
   const maxStatusCount = Math.max(...statusBars.map((s) => s.count), 1);
 
+  if (!mounted || !session) return null;
+
   return (
     <AdminLayout title="Reports" breadcrumb="Home / Reports">
+      <>
+        {toast && (
+          <div className={`toast toast-${toast.type}`}>
+            {toast.type === "success" ? <i className="fas fa-check"></i> : toast.type === "error" ? <i className="fas fa-times"></i> : <i className="fas fa-info-circle"></i>} {toast.message}
+          </div>
+        )}
+
+        {error && (
+          <div className="admin-alert admin-alert-danger" style={{ marginBottom: 20 }}>
+            <span><i className="fas fa-times-circle"></i></span> {error}
+            <button onClick={fetchData} className="admin-btn admin-btn-sm" style={{ marginLeft: 12 }}>Retry</button>
+          </div>
+        )}
       <div className="stats-grid" style={{ marginBottom: 20 }}>
         <div className="stat-card">
           <div className="stat-icon" style={{ background: "linear-gradient(135deg,#4A90E2,#7B68EE)" }}>
@@ -290,12 +366,16 @@ export default function ReportsPage() {
             <button className="admin-btn admin-btn-primary" onClick={() => exportCSV("orders")}>
               <i className="fas fa-download"></i> Export Orders CSV
             </button>
+            <button className="admin-btn admin-btn-outline" onClick={() => exportCSV("customers")}>
+              <i className="fas fa-download"></i> Export Customers CSV
+            </button>
             <button className="admin-btn admin-btn-outline" onClick={() => exportCSV("sales")}>
               <i className="fas fa-download"></i> Export Sales Report
             </button>
           </div>
         </div>
       </div>
+      </>
     </AdminLayout>
   );
 }
