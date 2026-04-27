@@ -80,8 +80,12 @@ export async function apiGet<T>(
   const res = await fetchWithRetry(url, { headers }, timeout, 2);
   if (!res.ok) throw new Error(`GET ${endpoint} failed: ${res.status}`);
   const json = await res.json();
-  // Handle { success, total, data: [...] } response
+  // Handle { success, data: [...] } array response
   if (json.success && json.data && Array.isArray(json.data)) {
+    return deepCamelCase(json.data) as T;
+  }
+  // Handle { success, data: {...} } object response (like reports aggregate)
+  if (json.success && json.data && typeof json.data === "object") {
     return deepCamelCase(json.data) as T;
   }
   // Handle { success, count, total, page, data: [...] } response
@@ -666,6 +670,40 @@ class OrdersAPI {
     return getAll<Order>("orders");
   }
 
+  async getPaginated(options: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    search?: string;
+    payment?: string;
+  } = {}) {
+    const { page = 1, limit = 10, status, search, payment } = options;
+    const params: Record<string, string | number> = { page, limit };
+    if (status && status !== "all") params.status = status;
+    if (search) params.search = search;
+    if (payment && payment !== "all") params.payment = payment;
+    
+    const qs = new URLSearchParams(params as Record<string, string>).toString();
+    const url = `${API_BASE}/orders?${qs}`;
+    const token = getAdminToken();
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    
+    const res = await fetchWithRetry(url, { headers }, LARGE_TIMEOUT, 2);
+    if (!res.ok) throw new Error(`GET orders failed: ${res.status}`);
+    const json = await res.json();
+    
+    if (!json.success) throw new Error(json.message || "Failed to fetch orders");
+    
+    return {
+      orders: deepCamelCase(json.data) as Order[],
+      total: json.total || 0,
+      page: json.page || page,
+      limit: json.limit || limit,
+      totalPages: Math.ceil((json.total || 0) / (json.limit || limit)),
+    };
+  }
+
   async getById(id: string) {
     return apiGetOne<Order>("orders", id);
   }
@@ -791,6 +829,37 @@ export const customersAPI = {
   async getAll(params?: Record<string, string | number>) {
     return getAll<Customer>("customers", params);
   },
+
+  async getPaginated(options: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  } = {}) {
+    const { page = 1, limit = 10, search } = options;
+    const params: Record<string, string | number> = { page, limit };
+    if (search) params.search = search;
+    
+    const qs = new URLSearchParams(params as Record<string, string>).toString();
+    const url = `${API_BASE}/customers?${qs}`;
+    const token = getAdminToken();
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    
+    const res = await fetchWithRetry(url, { headers }, LARGE_TIMEOUT, 2);
+    if (!res.ok) throw new Error(`GET customers failed: ${res.status}`);
+    const json = await res.json();
+    
+    if (!json.success) throw new Error(json.message || "Failed to fetch customers");
+    
+    return {
+      customers: deepCamelCase(json.data) as Customer[],
+      total: json.total || 0,
+      page: json.page || page,
+      limit: json.limit || limit,
+      totalPages: Math.ceil((json.total || 0) / (json.limit || limit)),
+    };
+  },
+
   async getById(id: string) {
     return apiGetOne<Customer>("customers", id);
   },
@@ -1064,3 +1133,46 @@ class ContentBudgetAPI {
 }
 
 export const contentBudgetAPI = new ContentBudgetAPI();
+
+// ============================================================
+// REPORTS API — Date-filtered aggregations
+// ============================================================
+
+export interface ReportStats {
+  totalRevenue: number;
+  totalOrders: number;
+  newOrders: number;
+  pendingOrders: number;
+  deliveredOrders: number;
+  cancelledOrders: number;
+  returnedOrders: number;
+  avgOrderValue: number;
+}
+
+export interface ReportsAggregate {
+  period: string;
+  dateRange: { start: string; end: string };
+  stats: ReportStats;
+  byStatus: Record<string, number>;
+  byPayment: Record<string, number>;
+  timeSeries: Array<{ date: string; orders: number; revenue: number; qty: number }>;
+  topProducts: Array<{ name: string; code: string; qty: number; revenue: number }>;
+}
+
+export const reportsAPI = {
+  async getAggregate(period: string = "all", groupBy: string = "day", options?: {
+    status?: string;
+    paymentMethod?: string;
+    nocache?: boolean;
+    startDate?: string;
+    endDate?: string;
+  }): Promise<ReportsAggregate> {
+    const params = new URLSearchParams({ period, groupBy });
+    if (options?.status) params.set("status", options.status);
+    if (options?.paymentMethod) params.set("paymentMethod", options.paymentMethod);
+    if (options?.nocache) params.set("nocache", "true");
+    if (options?.startDate) params.set("start", options.startDate);
+    if (options?.endDate) params.set("end", options.endDate);
+    return apiGet(`reports/aggregate?${params}`);
+  },
+};

@@ -151,6 +151,13 @@ export default function OrdersPage() {
   const [updating, setUpdating] = useState(false);
   const [toast, setToast] = useState<{ type: string; message: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [pageLimit] = useState(10);
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const s = adminAuthAPI.getSession();
@@ -160,7 +167,7 @@ export default function OrdersPage() {
     }
     setSession(s);
     setMounted(true);
-    loadOrders();
+    loadOrders(1);
   }, [router]);
 
   useEffect(() => {
@@ -170,25 +177,32 @@ export default function OrdersPage() {
     }
   }, [toast]);
 
+  useEffect(() => {
+    if (mounted && session) {
+      const timer = setTimeout(() => loadOrders(1), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [search]);
+
   const showToast = useCallback((type: string, message: string) => {
     setToast({ type, message });
   }, []);
 
-  const loadOrders = async () => {
+  const loadOrders = async (page = 1) => {
     setLoading(true);
     setError(null);
     try {
       const { ordersAPI } = await import("@/lib/api");
-      const data = await ordersAPI.getAll();
-      const ordersData = Array.isArray(data) ? data : [];
-      ordersData.sort((a: Order, b: Order) => {
-        const aTime = (a as any).createdAt ? new Date((a as any).createdAt).getTime() : 
-                     (a as any).createdAt ? new Date((a as any).createdAt).getTime() : 0;
-        const bTime = (b as any).createdAt ? new Date((b as any).createdAt).getTime() : 
-                     (b as any).createdAt ? new Date((b as any).createdAt).getTime() : 0;
-        return bTime - aTime;
+      const result = await ordersAPI.getPaginated({
+        page,
+        limit: pageLimit,
+        status: statusFilter,
+        search: search.trim() || undefined,
       });
-      setOrders(ordersData as Order[]);
+      setOrders(result.orders);
+      setTotalOrders(result.total);
+      setTotalPages(result.totalPages);
+      setCurrentPage(result.page);
     } catch (e) {
       console.error("Failed to load orders:", e);
       setError("Failed to load orders: " + String(e));
@@ -202,21 +216,19 @@ export default function OrdersPage() {
     return order._id || order.id || "";
   };
 
-  const filtered = orders.filter((o) => {
-    if (statusFilter !== "all" && o.orderStatus !== statusFilter) return false;
-    if (search) {
-      const q = search.toLowerCase();
-      return (
-        (o.orderNumber || "").toLowerCase().includes(q) ||
-        (o.customerName || "").toLowerCase().includes(q) ||
-        (o.customerPhone || "").includes(q)
-      );
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      loadOrders(newPage);
     }
-    return true;
-  });
+  };
+
+  const handleStatusChange = (status: string) => {
+    setStatusFilter(status);
+    loadOrders(1);
+  };
 
   const statusCounts = ALL_STATUSES.reduce((acc, s) => {
-    acc[s] = orders.filter((o) => o.orderStatus === s).length;
+    acc[s] = 0;
     return acc;
   }, {} as Record<string, number>);
 
@@ -560,7 +572,7 @@ ${Number(order.discountAmount || 0) > 0 ? `<div class="total-row discount"><span
         {error && (
           <div className="admin-alert admin-alert-danger" style={{ marginBottom: 20 }}>
             <span><i className="fas fa-times-circle"></i></span> {error}
-            <button onClick={loadOrders} className="admin-btn admin-btn-sm" style={{ marginLeft: 12 }}>Retry</button>
+            <button onClick={() => loadOrders(1)} className="admin-btn admin-btn-sm" style={{ marginLeft: 12 }}>Retry</button>
           </div>
         )}
 
@@ -569,7 +581,7 @@ ${Number(order.discountAmount || 0) > 0 ? `<div class="total-row discount"><span
           <div className="admin-card-header">
             <div className="admin-card-title">
               🛒 Orders Management
-              <span className="status-badge status-active" style={{ marginLeft: 8 }}>{filtered.length}</span>
+              <span className="status-badge status-active" style={{ marginLeft: 8 }}>{totalOrders}</span>
             </div>
             <div className="admin-card-actions">
               <div className="admin-search">
@@ -584,9 +596,9 @@ ${Number(order.discountAmount || 0) > 0 ? `<div class="total-row discount"><span
               <select
                 className="admin-select"
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={(e) => handleStatusChange(e.target.value)}
               >
-                <option value="all">All Status ({orders.length})</option>
+                <option value="all">All Status ({totalOrders})</option>
                 {ALL_STATUSES.map((s) => (
                   <option key={s} value={s}>{STATUS_LABELS[s].label} ({statusCounts[s]})</option>
                 ))}
@@ -619,7 +631,7 @@ ${Number(order.discountAmount || 0) > 0 ? `<div class="total-row discount"><span
                         </div>
                       </td>
                     </tr>
-                  ) : filtered.length === 0 ? (
+                  ) : orders.length === 0 ? (
                     <tr>
                       <td colSpan={9}>
                         <div className="empty-state">
@@ -630,7 +642,7 @@ ${Number(order.discountAmount || 0) > 0 ? `<div class="total-row discount"><span
                       </td>
                     </tr>
                   ) : (
-                    filtered.map((o) => (
+                    orders.map((o) => (
                       <tr key={getOrderId(o)}>
                         <td className="cell-bold">{o.orderNumber || getOrderId(o).slice(0, 8)}</td>
                         <td>
@@ -664,6 +676,47 @@ ${Number(order.discountAmount || 0) > 0 ? `<div class="total-row discount"><span
                 </tbody>
               </table>
             </div>
+            
+            {!loading && totalPages > 0 && (
+              <div className="pagination" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 0", marginTop: "8px", borderTop: "1px solid #eee" }}>
+                <div style={{ fontSize: "0.85rem", color: "var(--admin-muted)" }}>
+                  Showing {((currentPage - 1) * pageLimit) + 1} - {Math.min(currentPage * pageLimit, totalOrders)} of {totalOrders} orders
+                </div>
+                <div className="pagination-controls" style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+                  <button
+                    className="admin-btn admin-btn-outline admin-btn-sm"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    title="Previous Page"
+                  >
+                    <i className="fas fa-chevron-left"></i>
+                  </button>
+                  
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).slice(
+                    Math.max(0, currentPage - 3),
+                    Math.min(totalPages, currentPage + 2)
+                  ).map((pageNum) => (
+                    <button
+                      key={pageNum}
+                      className={`admin-btn admin-btn-sm ${pageNum === currentPage ? "admin-btn-primary" : "admin-btn-outline"}`}
+                      onClick={() => handlePageChange(pageNum)}
+                      style={{ minWidth: "36px" }}
+                    >
+                      {pageNum}
+                    </button>
+                  ))}
+                  
+                  <button
+                    className="admin-btn admin-btn-outline admin-btn-sm"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    title="Next Page"
+                  >
+                    <i className="fas fa-chevron-right"></i>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </>

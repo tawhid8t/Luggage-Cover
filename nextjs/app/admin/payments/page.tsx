@@ -39,6 +39,12 @@ export default function PaymentsPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [form, setForm] = useState({ status: "paid", reference: "" });
   const [saving, setSaving] = useState(false);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [pageLimit] = useState(10);
 
   useEffect(() => {
     if (toast) {
@@ -55,13 +61,20 @@ export default function PaymentsPage() {
     fetchOrders();
   }, []);
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (page = 1) => {
     setLoading(true);
     try {
       const { ordersAPI } = await import("@/lib/api");
-      const data = await ordersAPI.getAll();
-      const ordersList = Array.isArray(data) ? data : [];
-      setOrders(ordersList as unknown as Order[]);
+      const result = await ordersAPI.getPaginated({
+        page,
+        limit: pageLimit,
+        payment: methodFilter !== "all" ? methodFilter : undefined,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+      });
+      setOrders(result.orders);
+      setTotalOrders(result.total);
+      setTotalPages(result.totalPages);
+      setCurrentPage(result.page);
     } catch (e) {
       console.error("Failed to load orders:", e);
       setOrders([]);
@@ -117,11 +130,27 @@ export default function PaymentsPage() {
   };
 
   const filtered = orders.filter((o) => {
-    if (methodFilter !== "all" && o.paymentMethod !== methodFilter) return false;
     if (statusFilter !== "all" && o.paymentStatus !== statusFilter) return false;
     return true;
   });
 
+  const handleMethodChange = (value: string) => {
+    setMethodFilter(value);
+    fetchOrders(1);
+  };
+
+  const handleStatusChange = (value: string) => {
+    setStatusFilter(value);
+    fetchOrders(1);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      fetchOrders(newPage);
+    }
+  };
+
+  // Stats for current page only
   const codOrders = orders.filter((o) => o.paymentMethod === "cod");
   const onlineOrders = orders.filter((o) => o.paymentMethod !== "cod");
   const totalCOD = codOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
@@ -192,7 +221,7 @@ export default function PaymentsPage() {
               <select
                 className="admin-select"
                 value={methodFilter}
-                onChange={(e) => setMethodFilter(e.target.value)}
+                onChange={(e) => handleMethodChange(e.target.value)}
               >
                 <option value="all">All Methods</option>
                 <option value="cod">COD</option>
@@ -202,7 +231,7 @@ export default function PaymentsPage() {
               <select
                 className="admin-select"
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={(e) => handleStatusChange(e.target.value)}
               >
                 <option value="all">All Payment Status</option>
                 <option value="pending">Pending</option>
@@ -286,6 +315,47 @@ export default function PaymentsPage() {
                 </tbody>
               </table>
             </div>
+            
+            {!loading && totalPages > 0 && (
+              <div className="pagination" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 0", marginTop: "8px", borderTop: "1px solid #eee" }}>
+                <div style={{ fontSize: "0.85rem", color: "var(--admin-muted)" }}>
+                  Showing {((currentPage - 1) * pageLimit) + 1} - {Math.min(currentPage * pageLimit, totalOrders)} of {totalOrders} records
+                </div>
+                <div className="pagination-controls" style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+                  <button
+                    className="admin-btn admin-btn-outline admin-btn-sm"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    title="Previous Page"
+                  >
+                    <i className="fas fa-chevron-left"></i>
+                  </button>
+                  
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).slice(
+                    Math.max(0, currentPage - 3),
+                    Math.min(totalPages, currentPage + 2)
+                  ).map((pageNum) => (
+                    <button
+                      key={pageNum}
+                      className={`admin-btn admin-btn-sm ${pageNum === currentPage ? "admin-btn-primary" : "admin-btn-outline"}`}
+                      onClick={() => handlePageChange(pageNum)}
+                      style={{ minWidth: "36px" }}
+                    >
+                      {pageNum}
+                    </button>
+                  ))}
+                  
+                  <button
+                    className="admin-btn admin-btn-outline admin-btn-sm"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    title="Next Page"
+                  >
+                    <i className="fas fa-chevron-right"></i>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
